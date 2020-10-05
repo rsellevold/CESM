@@ -1,0 +1,46 @@
+run:
+  name: "LGM"
+  folder: "/scratch-shared/raymond"
+  ystart: 331
+  yend: 434
+  plotdir: "/home/raymond/LGMplots"
+
+trend:
+  significance: 0.05
+  nyears: 30 # Can be "all", a number of years, or a range (tuple)
+
+timeseries:
+  regions: ["global", "NH", "SH", "tropical"]
+
+runs:
+#  B-I-LGM-rest286-200729:
+#    folder: "/projects/0/couplice/archive"
+#  B-I-LGM-rest316-200804:
+#    folder: "/projects/0/couplice/archive"
+#  B-I-LGM-rest331-200814:
+#    folder: "/projects/0/couplice/archive"
+#  B-I-LGM-rest338-200817:
+#    folder: "/projects/0/couplice/archive"
+#  B-I-rest356-LGM-200828:
+#    folder: "/projects/0/couplice/archive"
+#  B-I-rest371-LGM-200902:
+#    folder: "/projects/0/couplice/archive"
+  B-I-rest428-LGM-200920:
+    folder: "/projects/0/couplice/archive"
+
+history:
+  atm:
+    h0:
+      varlist: ["CLDHGH", "CLDLOW", "CLDMED", "CLDTOT", "FLDS", "FLNS", "FLNSC", "FLNT", "FSDS", "FSDSC", "FSNS", "FSNSC", "FSNT", "ICEFRAC", "LHFLX", "PRECC", "PRECL", "PRECSC", "PRECSL", "PSL", "SHFLX", "TGCLDCWP", "TGCLDIWP", "TMQ", "TS", "U250", "U500", "U850", "V250", "V500", "V850"]
+      htype: "monavg"
+    h1:
+      varlist: ["LANDFRAC", "LWCF", "OCNFRAC", "QREFHT", "SWCF", "TREFHT", "U10", "SST"]
+      htype: "monavg"
+  ocn:
+    h:
+      varlist: ["TEMP"]
+      htype: "monavg"
+
+compset:
+  atm:
+    bnds: "time_bnds"
