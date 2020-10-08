@@ -1,5 +1,5 @@
 import yaml
-with open("config.tml","r") as f:
+with open("config.yml","r") as f:
     config = yaml.safe_load(f)
 import os,sys
 sys.path.append(f"{config['src']['codepath']}")
