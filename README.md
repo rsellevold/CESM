@@ -14,13 +14,13 @@ You may want to edit the name and prefix in _pythonenv.yml_.
 ## Create analysis directory
 To analyze a case, start by using
 
-```python
+```bash
 python new_case.py <full path to analysis directory>
 ```
 
 In this new directory you should start by editing _config.yml_. After, run
 
-```python
+```bash
 python main_proc.py
 ```
 
