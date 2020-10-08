@@ -13,7 +13,7 @@ scripts = ["process/atm/hist",
            "process/lnd/avg_mon2seas",
            "process/lnd/avg_mon2ann",
            "process/lnd/trends",
-           "process/atm/timeseries"]
+           "process/lnd/timeseries"]
 
 nproc = config["machine"]["nproc"]
 
