@@ -1,3 +1,6 @@
+src:
+  codepath: "/home/raymond/CESMpy"
+
 # Detail about the run
 run:
   name: "LGM"
