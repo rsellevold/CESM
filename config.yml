@@ -1,3 +1,10 @@
+machine:
+  directive: ["#SBATCH", "-N 1", "--time 01:00:00", "-p normal"]
+  nproc: 24
+  mpi: True
+  condaact: "/home/raymond/miniconda3/bin/activate"
+  condaenv: "LGM"
+
 src:
   codepath: "/home/raymond/CESMpy"
 
