@@ -23,7 +23,7 @@ procfile.write(f"source {config['machine']['condaact']} {config['machine']['cond
 
 for i in range(len(scripts)):
     if config["machine"]["mpi"]:
-	if scripts[i] == "process/atm/calcadd":
+        if scripts[i] == "process/atm/calcadd":
             procfile.write(f"mpiexec -n 1 python {config['src']['codepath']}/{scripts[i]}.py\n")
         else:
             procfile.write(f"mpiexec -n {config['machine']['nproc']} python {config['src']['codepath']}/{scripts[i]}.py\n")
