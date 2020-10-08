@@ -1,8 +1,10 @@
-import os, sys
-sys.path.append("/home/raymond/LGMeval")
+import yaml
+with open("config.tml","r") as f:
+    config = yaml.safe_load(f)
+import os,sys
+sys.path.append(f"{config['src']['codepath']}")
 
 from mpi4py import MPI
-import yaml
 import src
 
 
@@ -26,7 +28,7 @@ def main():
         else:
             fdir = None
         varlist = os.popen(f"ls {fdir}").read().split("\n")[:-1]
-        varlist = src.mpimods.check_varlist(varlist,size)
+        varlist = lib.mpimods.check_varlist(varlist,size)
 
         for i in range(int(len(varlist)/size)):
             if rank==0:
@@ -36,6 +38,6 @@ def main():
             data = comm.scatter(data, root=0)
             var = varlist[data]
             print(var)
-            if var is not None and fdir is not None: src.proc.trend(fdir, var, seas, nyears)
+            if var is not None and fdir is not None: lib.proc.trend(fdir, var, seas, nyears)
 
 main()

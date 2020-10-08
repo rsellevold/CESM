@@ -1,10 +1,12 @@
-import sys, os
-sys.path.append("/home/raymond/LGMeval")
+import yaml
+with open("config.tml","r") as f:
+    config = yaml.safe_load(f)
+import os,sys
+sys.path.append(f"{config['src']['codepath']}")
 
 from mpi4py import MPI
-import yaml
 import xarray as xr
-import src
+import lib
 
 
 def calcadd(fdir, var):
@@ -80,14 +82,9 @@ def main():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    # Get config
-    with open("config.yml","r") as f:
-        config = yaml.safe_load(f)
-
-
     fdir = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/monavg"
     varlist = ["ALBEDO", "PRECT", "SNOW", "RAIN", "RADTOA"]
-    varlist = src.mpimods.check_varlist(varlist, size)
+    varlist = lib.mpimods.check_varlist(varlist, size)
 
     for i in range(int(len(varlist)/size)):
         if rank==0:
