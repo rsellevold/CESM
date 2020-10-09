@@ -2,7 +2,7 @@ import yaml
 with open("config.yml","r") as f:
     config = yaml.safe_load(f)
 import os,sys
-sys.path.append(f"{config['src']['codepath']}")
+sys.path.append(f"{config['machine']['codepath']}")
 
 from mpi4py import MPI
 import src
