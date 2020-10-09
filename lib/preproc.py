@@ -34,15 +34,24 @@ def seasavg(fdir, var):
   os.system(f"rm {tmpdir}/{var}.seasavg.*")
 
 
-def mergehist(config, comp, var, hfile, htype):
+def mergehist(config, comp, var, hfile, htype, tstype=None):
   outfolder = f"{config['run']['folder']}/{config['run']['name']}/{comp}/hist/{htype}"
   _checkdir(outfolder)
 
-  fnames_all = []
-  for key,item in config["runs"].items():
-    fnames = glob.glob(f"{config['runs'][key]['folder']}/{key}/{comp}/hist/*.{hfile}.*.nc")
-    fnames_all.append(fnames)
-  fnames_all = [item for sublist in fnames_all for item in sublist]
+  b.e21.B1850G.f09_g17_gl4.CMIP6-ssp585-withism.001/atm/proc/tseries/month_1/b.e21.B1850G.f09_g17_gl4.CMIP6-ssp585-withism.001.cam.h0.TS.20 
+
+  if config["history"]["ts"]:
+    fnames_all = []
+    for key,item in config["runs"].items():
+      fnames = glob.glob(f"{config['runs'][key]['folder']}/{key}/{comp}/proc/tseries/{tstype}/*.{hfile}.{var}.*.nc")
+      fnames_all.append(fnames)
+    fnames_all = [item for sublist in fnames_all for item in sublist]
+  if not(config["history"]["ts"]):
+    fnames_all = []
+    for key,item in config["runs"].items():
+      fnames = glob.glob(f"{config['runs'][key]['folder']}/{key}/{comp}/hist/*.{hfile}.*.nc")
+      fnames_all.append(fnames)
+    fnames_all = [item for sublist in fnames_all for item in sublist]
 
   f = xr.open_mfdataset(fnames_all, concat_dim="time")
   f = f.sortby("time")
@@ -63,7 +72,7 @@ def mergehist(config, comp, var, hfile, htype):
 
   try: # Check if previous data exists
     data_already = xr.open_dataset(f"{outfolder}/{var}.nc")
-    data = xr.concat([data, data_already], dim="time")
+    data = xr.concat([data_already, data], dim="time")
     data = data.sortby("time")
     data_already.close()
   except FileNotFoundError:
