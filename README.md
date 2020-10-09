@@ -1,6 +1,6 @@
 # CESMpy
 
-This repository contains useful code for processing and plotting output from the Community Earth System Model.
+This repository contains code for processing and plotting output from the Community Earth System Model.
 
 
 ## Set up python environment
