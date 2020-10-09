@@ -1,26 +1,14 @@
-ARG JEKYLL_BASEURL=''
+FROM jekyll/builder
 
-####################################
-
-FROM ruby:alpine as builder
-
-RUN apk add --no-cache make build-base
-RUN gem install bundler
-
-WORKDIR /jekyll
-ADD Gemfile Gemfile.lock ./
+WORKDIR /tmp
+ADD Gemfile /tmp/
+ADD Gemfile.lock /tmp/
 RUN bundle install
 
-ADD . .
-ARG JEKYLL_BASEURL
-RUN bundle exec jekyll build --baseurl $JEKYLL_BASEURL
+FROM jekyll/jekyll
 
-####################################
+VOLUME /src
+EXPOSE 4000
 
-FROM nginx:alpine
-
-ARG JEKYLL_BASEURL
-COPY --from=builder /jekyll/_site /usr/share/nginx/html/$JEKYLL_BASEURL
-COPY nginx.conf /etc/nginx/nginx.conf
-
-EXPOSE 80
+WORKDIR /src
+ENTRYPOINT ["jekyll", "serve", "--livereload", "-H", "0.0.0.0"]
