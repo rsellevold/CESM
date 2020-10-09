@@ -1,28 +1,18 @@
+# Details about the machine
 machine:
+  codepath: "/home/raymond/CESMpy"
   directive: ["#SBATCH", "-N 1", "--time 01:00:00", "-p normal"]
   nproc: 24
   mpi: True
   condaact: "/home/raymond/miniconda3/bin/activate"
   condaenv: "LGM"
 
-src:
-  codepath: "/home/raymond/CESMpy"
-
 # Detail about the run
 run:
   name: "LGM"
   folder: "/scratch-shared/raymond"
   plotdir: "/home/raymond/LGMplots"
-
-# Specific to trend calculation and plotting
-trend:
-  significance: 0.05
-  nyears: 30 # Can be "all", a number of years, or a range (tuple)
-
-# Regions to calculate timeseries over
-timeseries:
-  regions: ["global", "NH", "SH", "tropical"]
-
+  
 # Runs to be analyzed
 runs:
 #  B-I-LGM-rest286-200729:
@@ -39,7 +29,12 @@ runs:
 #    folder: "/projects/0/couplice/archive"
   B-I-rest428-LGM-200920:
     folder: "/projects/0/couplice/archive"
-
+    
+# Specific settings for components
+compset:
+  atm:
+    bnds: "time_bnds"
+  
 # History files
 history:
   atm:
@@ -54,7 +49,15 @@ history:
       varlist: ["TEMP"]
       htype: "monavg"
 
-# Specific settings for components
-compset:
-  atm:
-    bnds: "time_bnds"
+##########
+# Script specific settings
+##########
+
+# Regions to calculate timeseries over
+timeseries:
+  regions: ["global", "NH", "SH", "tropical"]
+  
+# Specific to trend calculation and plotting
+trend:
+  significance: 0.05
+  nyears: 30 # Can be "all", a number of years, or a range (tuple)
