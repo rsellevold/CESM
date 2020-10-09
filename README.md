@@ -26,4 +26,4 @@ In this new directory you should start by editing `config.yml`. After, run
 python main_proc.py
 ```
 
-The file `main_proc` is a bash file that can either be submitted to batch (to use MPI), or run with bash.
+The file `main_proc` is a bash file that can either be submitted to batch (to use MPI), or run in serial with bash.
