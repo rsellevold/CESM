@@ -38,8 +38,6 @@ def mergehist(config, comp, var, hfile, htype, tstype=None):
   outfolder = f"{config['run']['folder']}/{config['run']['name']}/{comp}/hist/{htype}"
   _checkdir(outfolder)
 
-  b.e21.B1850G.f09_g17_gl4.CMIP6-ssp585-withism.001/atm/proc/tseries/month_1/b.e21.B1850G.f09_g17_gl4.CMIP6-ssp585-withism.001.cam.h0.TS.20 
-
   if config["history"]["ts"]:
     fnames_all = []
     for key,item in config["runs"].items():
