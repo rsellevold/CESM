@@ -34,16 +34,18 @@ def seasavg(fdir, var):
   os.system(f"rm {tmpdir}/{var}.seasavg.*")
 
 
-def mergehist(config, comp, var, hfile, htype, tstype=None):
+def mergehist(config, comp, var, hfile, htype):
   outfolder = f"{config['run']['folder']}/{config['run']['name']}/{comp}/hist/{htype}"
   _checkdir(outfolder)
 
   if config["history"]["ts"]:
     fnames_all = []
     for key,item in config["runs"].items():
-      fnames = glob.glob(f"{config['runs'][key]['folder']}/{key}/{comp}/proc/tseries/{tstype}/*.{hfile}.{var}.*.nc")
+      fnames = glob.glob(f"{config['runs'][key]['folder']}/{key}/{comp}/proc/tseries/{config['history'][comp][hfile]['tstype']}/*.{hfile}.{var}.*.nc")
       fnames_all.append(fnames)
     fnames_all = [item for sublist in fnames_all for item in sublist]
+    print(fnames_all)
+    sys.exit()
   if not(config["history"]["ts"]):
     fnames_all = []
     for key,item in config["runs"].items():

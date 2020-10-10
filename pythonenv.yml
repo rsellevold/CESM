@@ -1,4 +1,4 @@
-name: CESM
+name: CESMpy
 channels:
   - conda-forge
   - defaults
@@ -179,4 +179,4 @@ dependencies:
   - zict=2.0.0=py_0
   - zlib=1.2.11=h7b6447c_3
   - zstd=1.4.5=h6597ccf_2
-prefix: /home/raymond/miniconda3/envs/CESM
+prefix: /glade/work/raymonds/mc3/envs/CESMpy
