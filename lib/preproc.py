@@ -44,8 +44,6 @@ def mergehist(config, comp, var, hfile, htype):
       fnames = glob.glob(f"{config['runs'][key]['folder']}/{key}/{comp}/proc/tseries/{config['history'][comp][hfile]['tstype']}/*.{hfile}.{var}.*.nc")
       fnames_all.append(fnames)
     fnames_all = [item for sublist in fnames_all for item in sublist]
-    print(fnames_all)
-    sys.exit()
   if not(config["history"]["ts"]):
     fnames_all = []
     for key,item in config["runs"].items():
