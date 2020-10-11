@@ -5,7 +5,7 @@ import os,sys
 sys.path.append(f"{config['machine']['codepath']}")
 
 from mpi4py import MPI
-import src
+import lib
 
 
 def main():

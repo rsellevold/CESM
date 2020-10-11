@@ -2,7 +2,7 @@ import yaml
 with open("config.yml","r") as f:
     config = yaml.safe_load(f)
 import os,sys
-sys.path.append(f"{config['src']['codepath']}")
+sys.path.append(f"{config['machine']['codepath']}")
 
 from mpi4py import MPI
 import xarray as xr
@@ -10,7 +10,7 @@ import lib
 
 
 def calcadd(fdir, var):
-    if var=="ALBEDO":
+    if var=="ALBEDO_ICE":
         try:
             ds = xr.open_mfdataset([f"{fdir}/FSR_ICE.nc",f"{fdir}/FSDS.nc"], combine="nested")
             ALBEDO_ICE = ds["FSR_ICE"]/ds["FSDS"]
@@ -117,12 +117,12 @@ def calcadd(fdir, var):
     if var=="GHF_ICE":
         try:
             ds = xr.open_mfdataset([f"{fdir}/MELTHEAT_ICE.nc", f"{fdir}/FSA_ICE.nc", f"{fdir}/FIRA_ICE.nc", f"{fdir}/EFLX_LH_TOT_ICE.nc", f"{fdir}/FSH_ICE.nc"], combine="nested")
-            MELTHEAT_ICE = ds["MELTHEAT_ICE"] - ds["FSA_ICE"] - ds["FIRA_ICE"] + ds["EFLX_LH_TOT_ICE"] + ds["FSH_ICE"]
-            MELTHEAT_ICE.name = "MELTHEAT_ICE"
-            MELTHEAT_ICE = MELTHEAT_ICE.to_dataset()
-            MELTHEAT_ICE.encoding["unlimited_dims"] = "time"
-            MELTHEAT_ICE.to_netcdf(f"{fdir}/MELTHEAT_ICE.nc")
-            MELTHEAT_ICE.close()
+            GHF_ICE = ds["MELTHEAT_ICE"] - ds["FSA_ICE"] - ds["FIRA_ICE"] + ds["EFLX_LH_TOT_ICE"] + ds["FSH_ICE"]
+            GHF_ICE.name = "GHF_ICE"
+            GHF_ICE = GHF_ICE.to_dataset()
+            GHF_ICE.encoding["unlimited_dims"] = "time"
+            GHF_ICE.to_netcdf(f"{fdir}/GHF_ICE.nc")
+            GHF_ICE.close()
             ds.close()
         except:
             None

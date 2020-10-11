@@ -29,7 +29,7 @@ def trend_calc(data, tt):
     for k in range(nk):
       for y in range(ny):
         for x in range(nx):
-          tren[k,y,x], _, r[k,y,x], _, p[k,y,x], _ = linregress(np.arange(0,tt,1),data[:,k,y,x])
+          tren[k,y,x], _, r[k,y,x], p[k,y,x], _ = linregress(np.arange(0,tt,1),data[:,k,y,x])
 
   return (tren, r, p)
 
@@ -58,9 +58,15 @@ def trend(fdir, var, seas, nyears):
     r = xr.DataArray(r, name="r", dims=("lat","lon"), coords=[f.lat,f.lon])
     p = xr.DataArray(p, name="p", dims=("lat","lon"), coords=[f.lat,f.lon])
   elif tren.ndim==3:
-    tren = xr.DataArray(tren, name="trend", dims=("lev","lat","lon"), coords=[f.lev,f.lat,f.lon])
-    r = xr.DataArray(r, name="r", dims=("lev","lat","lon"), coords=[f.lev,f.lat,f.lon])
-    p = xr.DataArray(p, name="p", dims=("lev","lat","lon"), coords=[f.lev,f.lat,f.lon])
+    dims = list(f.dims)
+    if "lat" in dims: dims.remove("lat")
+    if "lon" in dims: dims.remove("lon")
+    if "time" in dims: dims.remove("time")
+    if "bnds" in dims: dims.remove("bnds")
+    dims = dims[0]
+    tren = xr.DataArray(tren, name="trend", dims=(dims,"lat","lon"), coords=[f[dims],f.lat,f.lon])
+    r = xr.DataArray(r, name="r", dims=(dims,"lat","lon"), coords=[f[dims],f.lat,f.lon])
+    p = xr.DataArray(p, name="p", dims=(dims,"lat","lon"), coords=[f[dims],f.lat,f.lon])
 
   fout = xr.Dataset({"trend": tren, "r":r, "p":p})
   fout.attrs["nyears"] = nyears
@@ -114,7 +120,13 @@ def ts(fdir, var, seas, region):
   if data.ndim==1:
     data = xr.DataArray(data, name=key, dims=("time"), coords=[f.time])
   elif data.ndim==2:
-    data = xr.DataArray(data, name=key, dims=("time","lev"), coords=[f.time,f.lev])
+    dims = list(f.dims)
+    if "lat" in dims: dims.remove("lat")
+    if "lon" in dims: dims.remove("lon")
+    if "time" in dims: dims.remove("time")
+    if "bnds" in dims: dims.remove("bnds")
+    dims = dims[0]
+    data = xr.DataArray(data, name=key, dims=("time",dims), coords=[f.time,f[dims]])
 
   data = data.to_dataset()
   data.encoding["unlimited_dims"] = "time"
