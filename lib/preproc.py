@@ -1,4 +1,4 @@
-import sys,os,glob
+import sys,os,glob,math
 
 import xarray as xr
 import cftime
@@ -51,7 +51,20 @@ def mergehist(config, comp, var, hfile, htype):
       fnames_all.append(fnames)
     fnames_all = [item for sublist in fnames_all for item in sublist]
 
-  f = xr.open_mfdataset(fnames_all, concat_dim="time")
+  os.system(f"mkdir -p {outfolder}/temp")
+
+  fnames_all.sort()
+
+  nfiles = math.floor(len(fnames_all)/100)
+
+  for i in range(nfiles+1):
+    fstring = " ".join(fnames_all[i*100:(i+1)*100])
+    if i==0:
+        os.system(f"ncrcat -v {var} {fstring} {outfolder}/temp/{var}.nc")
+    else:
+        os.system(f"ncrcat -O -v {var} {fstring} {outfolder}/temp/{var}.nc {outfolder}/temp/{var}.nc")
+
+  f = xr.open_dataset(f"{outfolder}/temp/{var}.nc")
   f = f.sortby("time")
 
   try:
@@ -86,3 +99,4 @@ def mergehist(config, comp, var, hfile, htype):
 
   data.close()
   f.close()
+  os.system(f"rm {outfolder}/temp/{var}.nc")
