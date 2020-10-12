@@ -70,6 +70,11 @@ def mergehist(config, comp, var, hfile, htype):
 
   try: # Check if previous data exists
     data_already = xr.open_dataset(f"{outfolder}/{var}.nc")
+    starttime = data_already.time.dt.year.min().values
+    endtime = data_already.time.dt.year.max().values
+    endtime_new = data.time.dt.year.min().values
+    if endtime > endtime_new:
+      data_already = data_already.sel(time=slice(str(starttime).zfill(4),str(endtime_new-1).zfill(4)))
     data = xr.concat([data_already, data], dim="time")
     data = data.sortby("time")
     data_already.close()
