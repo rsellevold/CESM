@@ -84,7 +84,10 @@ def mergehist(config, comp, var, hfile, htype):
   else:
     f.time.values = f.time.values - 1
 
-  data = f[var]
+  if comp=="ocn" and var=="MOC":
+    data = f[var][:,1,0,:,:]
+  else:
+    data = f[var]
   data = data.to_dataset()
 
   try: # Check if previous data exists
