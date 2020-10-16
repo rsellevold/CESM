@@ -51,7 +51,7 @@ def mergehist(config, comp, var, hfile, htype):
       fnames_all.append(fnames)
     fnames_all = [item for sublist in fnames_all for item in sublist]
 
-  os.system(f"mkdir -p {outfolder}/temp")
+  os.system(f"mkdir -p {outfolder[:-12]}/temp")
 
   fnames_all.sort()
 
@@ -81,6 +81,8 @@ def mergehist(config, comp, var, hfile, htype):
     bnds = xr.DataArray(bnds, name="time", dims=("time"))
     bnds.attrs["long_name"] = f.time.long_name
     f["time"] = bnds
+  else:
+    f.time.values = f.time.values - 1
 
   data = f[var]
   data = data.to_dataset()
