@@ -76,15 +76,21 @@ def trend(fdir, var, seas, nyears):
 
 
 def areastat(data, weights, arith):
-  if data.ndim==3:
+  if data.ndim==3 and weights.ndim==2:
     weights = weights[np.newaxis,...]
-  elif data.ndim==4:
+  elif data.ndim==4 and weights.ndim==2:
     weights = weights[np.newaxis,np.newaxis,...]
+  elif data.ndim==weights.ndim:
+    equal = True
   else:
     sys.exit("Statistics not supported for data with ", data.ndim, " dimensions")
-  
-  if arith=="mean":
+
+  if arith=="mean" and not(equal):
+    print("I go in here")
+    sys.exit()
     data = np.nansum(data * weights, axis=(-2,-1)) / np.nansum(weights)
+  elif arith=="mean" and equal:
+    data = np.nansum(data * weights, axis=(-2,-1)) / np.nansum(weights, axis=(-2,-1))
   elif arith=="sum":
     data = np.nansum(data * weights, axis=(-2,-1))
 
@@ -134,4 +140,35 @@ def ts(fdir, var, seas, region):
 
   data.close()
   farea.close()
+  f.close()
+
+
+def ts_masks(fdir, var, seas, mask):
+  outdir = f"{fdir[:-12]}/timeseries_masks/{mask.name}/{seas}"
+  _checkdir(outdir)
+
+  f = xr.open_dataset(f"{fdir}/{var}")
+  keys = list(f.keys())
+  if "time_bnds" in keys: keys.remove("time_bnds")
+  key = keys[0]
+
+  if var!="PCT_LANDUNIT.nc":
+    data = areastat(f[key].values, mask.values, "mean")
+
+    if data.ndim==1:
+      data = xr.DataArray(data, name=key, dims=("time"), coords=[f.time])
+    elif data.ndim==2:
+      dims = list(f.dims)
+      if "lat" in dims: dims.remove("lat")
+      if "lon" in dims: dims.remove("lon")
+      if "time" in dims: dims.remove("time")
+      if "bnds" in dims: dims.remove("bnds")
+      dims = dims[0]
+      data = xr.DataArray(data, name=key, dims=("time",dims), coords=[f.time,f[dims]])
+
+    data = data.to_dataset()
+    data.encoding["unlimited_dims"] = "time"
+    data.to_netcdf(f"{outdir}/{var}")
+
+    data.close()
   f.close()
