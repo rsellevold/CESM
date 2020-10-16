@@ -1,3 +1,4 @@
+import sys
 import xarray as xr
 from scipy.stats import linregress
 import numpy as np
@@ -76,6 +77,7 @@ def trend(fdir, var, seas, nyears):
 
 
 def areastat(data, weights, arith):
+  equal = False
   if data.ndim==3 and weights.ndim==2:
     weights = weights[np.newaxis,...]
   elif data.ndim==4 and weights.ndim==2:
@@ -86,8 +88,6 @@ def areastat(data, weights, arith):
     sys.exit("Statistics not supported for data with ", data.ndim, " dimensions")
 
   if arith=="mean" and not(equal):
-    print("I go in here")
-    sys.exit()
     data = np.nansum(data * weights, axis=(-2,-1)) / np.nansum(weights)
   elif arith=="mean" and equal:
     data = np.nansum(data * weights, axis=(-2,-1)) / np.nansum(weights, axis=(-2,-1))

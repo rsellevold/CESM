@@ -60,14 +60,14 @@ def mergehist(config, comp, var, hfile, htype):
   for i in range(nfiles+1):
     fstring = " ".join(fnames_all[i*100:(i+1)*100])
     if i==0:
-        os.system(f"ncrcat -v {var} {fstring} {outfolder}/temp/{var}.nc")
+      os.system(f"ncrcat -v {var} {fstring} {outfolder[:-12]}/temp/{var}.nc")
     else:
-        os.system(f"ncrcat -O -v {var} {fstring} {outfolder}/temp/{var}.nc {outfolder}/temp/{var}.nc")
+      os.system(f"ncrcat -O -v {var} {fstring} {outfolder[:-12]}/temp/{var}.nc {outfolder[:-12]}/temp/{var}.nc")
 
   if comp=="glc":
-    f = xr.open_dataset(f"{outfolder}/temp/{var}.nc", decode_times=False)
+    f = xr.open_dataset(f"{outfolder[:-12]}/temp/{var}.nc", decode_times=False)
   else:
-    f = xr.open_dataset(f"{outfolder}/temp/{var}.nc")
+    f = xr.open_dataset(f"{outfolder[:-12]}/temp/{var}.nc")
   f = f.sortby("time")
 
   if comp!="glc":
@@ -114,4 +114,4 @@ def mergehist(config, comp, var, hfile, htype):
 
   data.close()
   f.close()
-  os.system(f"rm {outfolder}/temp/{var}.nc")
+  os.system(f"rm {outfolder[:-12]}/temp/{var}.nc")
