@@ -54,6 +54,8 @@ def mergehist(config, comp, var, hfile, htype):
   os.system(f"mkdir -p {outfolder[:-12]}/temp")
 
   fnames_all.sort()
+  if comp=="ocn" and not(config["history"]["ts"]):
+    fnames_all = fnames_all[:-1]
 
   nfiles = math.floor(len(fnames_all)/100)
 
