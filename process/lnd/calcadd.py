@@ -23,6 +23,19 @@ def calcadd(fdir, var):
         except:
             None
 
+   if var=="ALBEDO":
+        try:
+            ds = xr.open_mfdataset([f"{fdir}/FSR.nc",f"{fdir}/FSDS.nc"], combine="nested")
+            ALBEDO = ds["FSR"]/ds["FSDS"]
+            ALBEDO.name = "ALBEDO"
+            ALBEDO = ALBEDO.to_dataset()
+            ALBEDO.encoding["unlimited_dims"] = "time"
+            ALBEDO.to_netcdf(f"{fdir}/ALBEDO.nc")
+            ALBEDO.close()
+            ds.close()
+        except:
+            None 
+
     if var=="MELT_ICE":
         try:
             ds = xr.open_mfdataset([f"{fdir}/QSNOMELT_ICE.nc", f"{fdir}/QICE_MELT.nc"], combine="nested")
@@ -32,6 +45,19 @@ def calcadd(fdir, var):
             MELT_ICE.encoding["unlimited_dims"] = "time"
             MELT_ICE.to_netcdf(f"{fdir}/MELT_ICE.nc")
             MELT_ICE.close()
+            ds.close()
+        except:
+            None
+
+    if var=="MELT":
+        try:
+            ds = xr.open_mfdataset([f"{fdir}/QSNOMELT.nc", f"{fdir}/QICE_MELT.nc"], combine="nested")
+            MELT = ds["QSNOMELT"] + ds["QICE_MELT"]
+            MELT.name = "MELT"
+            MELT = MELT.to_dataset()
+            MELT.encoding["unlimited_dims"] = "time"
+            MELT.to_netcdf(f"{fdir}/MELT.nc")
+            MELT.close()
             ds.close()
         except:
             None
@@ -49,6 +75,19 @@ def calcadd(fdir, var):
         except:
             None
 
+    if var=="PRECIP":
+        try:
+            ds = xr.open_mfdataset([f"{fdir}/SNOW.nc", f"{fdir}/RAIN.nc"], combine="nested")
+            PRECIP = ds["SNOW"] + ds["RAIN"]
+            PRECIP.name = "PRECIP"
+            PRECIP = PRECIP.to_dataset()
+            PRECIP.encoding["unlimited_dims"] = "time"
+            PRECIP.to_netcdf(f"{fdir}/PRECIP.nc")
+            PRECIP.close()
+            ds.close()
+        except:
+            None
+
     if var=="SMB_ICE":
         try:
             ds = xr.open_mfdataset([f"{fdir}/SNOW_ICE.nc", f"{fdir}/QSNOFRZ_ICE.nc", f"{fdir}/QSNOMELT_ICE.nc", f"{fdir}/QICE_MELT.nc", f"{fdir}/QSOIL_ICE.nc"], combine="nested")
@@ -58,6 +97,19 @@ def calcadd(fdir, var):
             SMB_ICE.encoding["unlimited_dims"] = "time"
             SMB_ICE.to_netcdf(f"{fdir}/SMB_ICE.nc")
             SMB_ICE.close()
+            ds.close()
+        except:
+            None
+
+    if var=="SMB":
+        try:
+            ds = xr.open_mfdataset([f"{fdir}/SNOW.nc", f"{fdir}/QSNOFRZ.nc", f"{fdir}/QSNOMELT.nc", f"{fdir}/QICE_MELT.nc", f"{fdir}/QSOIL.nc"], combine="nested")
+            SMB = ds["SNOW"] + ds["QSNOFRZ"] - ds["QSNOMELT"] - ds["QICE_MELT"] - ds["QSOIL"]
+            SMB.name = "SMB"
+            SMB = SMB.to_dataset()
+            SMB.encoding["unlimited_dims"] = "time"
+            SMB.to_netcdf(f"{fdir}/SMB.nc")
+            SMB.close()
             ds.close()
         except:
             None
@@ -135,7 +187,7 @@ def main():
     size = comm.Get_size()
 
     fdir = f"{config['run']['folder']}/{config['run']['name']}/lnd/hist/monavg"
-    varlist = ["ALBEDO_ICE", "MELT_ICE", "PRECIP_ICE", "SMB_ICE", "RUNOFF_ICE", "FSA_ICE", "FIRA_ICE", "MELTHEAT_ICE", "GHF_ICE"]
+    varlist = ["ALBEDO_ICE", "ALBEDO", "MELT_ICE", "MELT", "PRECIP_ICE", "PRECIP", "SMB_ICE", "SMB", "RUNOFF_ICE", "FSA_ICE", "FIRA_ICE", "MELTHEAT_ICE", "GHF_ICE"]
     varlist = lib.mpimods.check_varlist(varlist, size)
 
     for i in range(int(len(varlist)/size)):
