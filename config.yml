@@ -34,6 +34,12 @@ runs:
 compset:
   atm:
     bnds: "time_bnds"
+  lnd:
+    bnds: "time_bounds"
+  ocn:
+    bnds: "time_bound"
+  ice:
+    bnds: "time_bounds"
   
 # History files
 history:

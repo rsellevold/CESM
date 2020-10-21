@@ -84,7 +84,7 @@ def mergehist(config, comp, var, hfile, htype):
     bnds.attrs["long_name"] = f.time.long_name
     f["time"] = bnds
   else:
-    f.time.values = f.time.values - 1
+    f["time"] = f.time - 1
 
   if comp=="ocn" and var=="MOC":
     data = f[var][:,1,0,:,:]

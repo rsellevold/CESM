@@ -23,7 +23,7 @@ def calcadd(fdir, var):
         except:
             None
 
-   if var=="ALBEDO":
+    if var=="ALBEDO":
         try:
             ds = xr.open_mfdataset([f"{fdir}/FSR.nc",f"{fdir}/FSDS.nc"], combine="nested")
             ALBEDO = ds["FSR"]/ds["FSDS"]

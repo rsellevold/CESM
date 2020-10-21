@@ -75,6 +75,32 @@ def calcadd(fdir, var):
         except:
             None
 
+    elif var=="FSCF":
+        try:
+            FSDS = xr.open_dataset(f"{fdir}/FSDS.nc")
+            FSDSC = xr.open_dataset(f"{fdir}/FSDSC.nc")
+            FSCF = FSDS["FSDS"] - FSDSC["FSDSC"]
+            FSCF.name = "FSCF"
+            FSCF.to_dataset()
+            FSCF.encoding["unlimited_dims"] = "time"
+            FSCF.to_netcdf(f"{fdir}/FSCF.nc")
+            FSCF.close()
+        except:
+            None
+
+    elif var=="FLCF":
+        try:
+            FLDS = xr.open_dataset(f"{fdir}/FLDS.nc")
+            FLDSC = xr.open_dataset(f"{fdir}/FLDSC.nc")
+            FLCF = FLDS["FSDS"] - FLDSC["FLDSC"]
+            FLCF.name = "FLCF"
+            FLCF.to_dataset()
+            FLCF.encoding["unlimited_dims"] = "time"
+            FLCF.to_netcdf(f"{fdir}/FLCF.nc")
+            FLCF.close()
+        except:
+            None
+
 
 def main():
     # Initialize MPI
@@ -83,7 +109,7 @@ def main():
     size = comm.Get_size()
 
     fdir = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/monavg"
-    varlist = ["ALBEDO", "PRECT", "SNOW", "RAIN", "RADTOA"]
+    varlist = ["ALBEDO", "PRECT", "SNOW", "RAIN", "RADTOA", "FSCF", "FLCF"]
     varlist = lib.mpimods.check_varlist(varlist, size)
 
     for i in range(int(len(varlist)/size)):
