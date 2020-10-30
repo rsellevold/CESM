@@ -18,7 +18,7 @@ scripts = ["process/atm/hist",
            "process/ocn/avg_mon2ann",
            "process/ice/hist",
            "process/ice/avg_mon2seas",
-           "process/glc/hist.py"]
+           "process/glc/hist"]
 
 nproc = config["machine"]["nproc"]
 
