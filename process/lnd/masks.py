@@ -19,10 +19,10 @@ def masks(fdir, var):
         GrIS = GrIS.to_dataset()
         GrIS.encoding["unlimited_dims"] = "time"
         checkfile = f"{fdir[:-12]}/masks.nc"
-        if os.path.exists(checkfile):
-          GrIS.to_netcdf(checkfile, mode="a")
-        else:
-          GrIS.to_netcdf(checkfile)
+        #if os.path.exists(checkfile):
+        #  GrIS.to_netcdf(checkfile, mode="a")
+        #else:
+        GrIS.to_netcdf(checkfile)
         GrIS.close()
         ds.close()
         #except:
