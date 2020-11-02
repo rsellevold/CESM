@@ -79,13 +79,16 @@ def trend(fdir, var, seas, nyears):
 def areastat(data, weights, arith):
   equal = False
   if data.ndim==3 and weights.ndim==2:
+    weights[np.isnan(data[0,:,:])] = np.nan
     weights = weights[np.newaxis,...]
   elif data.ndim==4 and weights.ndim==2:
+    weights[np.isnan(data[0, 0, :, :])] = np.nan
     weights = weights[np.newaxis,np.newaxis,...]
   elif data.ndim==weights.ndim:
     equal = True
+    weights[np.isnan(data)] = np.nan
   else:
-    sys.exit("Statistics not supported for data with ", data.ndim, " dimensions")
+    sys.exit(f"Statistics not supported for data with {data.ndim} dimensions")
 
   if arith=="mean" and not(equal):
     data = np.nansum(data * weights, axis=(-2,-1)) / np.nansum(weights)

@@ -36,6 +36,8 @@ for i in range(len(scripts)):
     if config["machine"]["mpi"]:
         if scripts[i] == "process/atm/calcadd":
             procfile.write(f"mpiexec -n 1 python {config['machine']['codepath']}/{scripts[i]}.py\n")
+        elif scripts[i] == "process/lnd/calcadd":
+            procfile.write(f"mpiexec -n 1 python {config['machine']['codepath']}/{scripts[i]}.py\n")
         else:
             procfile.write(f"mpiexec -n {config['machine']['nproc']} python {config['machine']['codepath']}/{scripts[i]}.py\n")
 

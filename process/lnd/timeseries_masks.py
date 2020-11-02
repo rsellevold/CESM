@@ -19,13 +19,13 @@ def main():
     with open("config.yml","r") as f:
         config = yaml.safe_load(f)
 
-    masks = xr.open_dataset(f"{config['run']['folder']}/{config['run']['name']}/lnd/masks_annavg.nc")
+    masks = xr.open_dataset(f"{config['run']['folder']}/{config['run']['name']}/lnd/masks.nc")
     keylist = list(masks.keys())
     if "time_bnds" in keylist: keylist.remove("time_bnds")
     print(keylist)
     for k in keylist:
         print(k)
-        for seas in ["JJAavg","annavg"]:
+        for seas in ["MAMavg","JJAavg","SONavg","annavg"]:
             if rank==0:
                 print(seas)
             fdir = f"{config['run']['folder']}/{config['run']['name']}/lnd/hist/{seas}"
@@ -40,6 +40,6 @@ def main():
                 data = comm.scatter(data, root=0)
                 var = varlist[data]
                 print(var)
-                if var is not None: lib.proc.ts_masks(fdir, var, seas, masks[k])
+                if var is not None or var!="TLAKE.nc": lib.proc.ts_masks(fdir, var, seas, masks[k])
 
 main()
