@@ -153,6 +153,20 @@ def calcadd(fdir, var):
         except:
             None
 
+    if var=="FIRA_ICE":
+        try:
+            ds = xr.open_mfdataset([f"{fdir}/FLDS.nc", f"{fdir}/FIRE_ICE.nc"], combine="nested")
+            FIRA_ICE = ds["FLDS"] - ds["FIRE_ICE"]
+            FIRA_ICE.name = "FIRA_ICE"
+            FIRA_ICE = FIRA_ICE.to_dataset()
+            FIRA_ICE.encoding["unlimited_dims"] = "time"
+            FIRA_ICE.to_netcdf(f"{fdir}/FIRA_ICE.nc")
+            FIRA_ICE.close()
+            ds.close()
+        except:
+            None
+
+
     if var=="MELTHEAT_ICE":
         try:
             ds = xr.open_mfdataset([f"{fdir}/MELT_ICE.nc"], combine="nested")
