@@ -13,6 +13,13 @@ def _checkdir(folder):
     os.system(f"mkdir -p {folder}")
 
 
+def monavg(fdir, var):
+  # Computes monthly means
+  outdir = f"{fdir[:-7]/monavg"
+  _checkdir(outdir)
+  cdo.monmean(input=f"{fdir}/{var}", output=f"{outdir}/{var}")
+
+
 def annavg(fdir, var):
   # Computes the annual means
   outdir = f"{fdir[:-7]}/annavg"
