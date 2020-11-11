@@ -79,7 +79,7 @@ def trend(fdir, var, seas, nyears):
 def areastat(data, weights, arith):
   equal = False
   if data.ndim==3 and weights.ndim==2:
-    weights[np.isnan(data[0,:,:])] = np.nan
+    weights[np.isnan(data[1,:,:])] = np.nan
     weights = weights[np.newaxis,...]
   elif data.ndim==4 and weights.ndim==2:
     weights[np.isnan(data[0, 0, :, :])] = np.nan

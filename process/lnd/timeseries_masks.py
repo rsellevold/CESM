@@ -25,7 +25,7 @@ def main():
     print(keylist)
     for k in keylist:
         print(k)
-        for seas in ["MAMavg","JJAavg","SONavg","annavg"]:
+        for seas in ["annavg"]:
             if rank==0:
                 print(seas)
             fdir = f"{config['run']['folder']}/{config['run']['name']}/lnd/hist/{seas}"
