@@ -19,14 +19,32 @@ def masks(fdir, var):
         GrIS = GrIS.to_dataset()
         GrIS.encoding["unlimited_dims"] = "time"
         checkfile = f"{fdir[:-12]}/masks.nc"
-        #if os.path.exists(checkfile):
-        #  GrIS.to_netcdf(checkfile, mode="a")
-        #else:
+            #if os.path.exists(checkfile):
+            #    GrIS.to_netcdf(checkfile, mode="a")
+            #else:
         GrIS.to_netcdf(checkfile)
         GrIS.close()
         ds.close()
         #except:
         #    None
+
+    if var=="GrIS_pct":
+        try:
+            ds = xr.open_mfdataset([f"{fdir[:-12]}/input.nc", f"{fdir}/ICE_MODEL_FRACTION.nc", f"{fdir}/PCT_LANDUNIT.nc"], combine="nested")
+            GrIS = ds.ICE_MODEL_FRACTION.values * ds.PCT_LANDUNIT.values[:,3,:,:]/100.0 * ds.landfrac.values
+            GrIS = xr.DataArray(GrIS, name="GrIS_pct", dims=("time","lat","lon"), coords=[ds.time, ds.lat, ds.lon])
+            GrIS = GrIS.fillna(0.)
+            GrIS = GrIS.to_dataset()
+            GrIS.encoding["unlimited_dims"] = "time"
+            checkfile = f"{fdir[:-12]}/masks.nc"
+            if os.path.exists(checkfile):
+                GrIS.to_netcdf(checkfile, mode="a")
+            else:
+                GrIS.to_netcdf(checkfile)
+            GrIS.close()
+            ds.close()
+        except:
+            None
 
 
 def main():
@@ -36,7 +54,7 @@ def main():
     size = comm.Get_size()
 
     fdir = f"{config['run']['folder']}/{config['run']['name']}/lnd/hist/monavg"
-    varlist = ["GrIS"]
+    varlist = ["GrIS", "GrIS_pct"]
     varlist = lib.mpimods.check_varlist(varlist, size)
 
     for i in range(int(len(varlist)/size)):
