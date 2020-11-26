@@ -19,7 +19,7 @@ def main():
     with open("config.yml","r") as f:
         config = yaml.safe_load(f)
 
-    masks = xr.open_dataset(f"{config['run']['folder']}/{config['run']['name']}/lnd/masks_annavg.nc")
+    masks = xr.open_dataset(f"{config['run']['folder']}/{config['run']['name']}/lnd/masks.nc")
     keylist = list(masks.keys())
     if "time_bnds" in keylist: keylist.remove("time_bnds")
     print(keylist)
