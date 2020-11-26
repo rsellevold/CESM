@@ -25,7 +25,7 @@ def main():
     print(keylist)
     for k in keylist:
         print(k)
-        for seas in ["annavg"]:
+        for seas in ["annavg", "JJAavg"]:
             if rank==0:
                 print(seas)
             fdir = f"{config['run']['folder']}/{config['run']['name']}/lnd/hist/{seas}"
@@ -40,6 +40,6 @@ def main():
                 data = comm.scatter(data, root=0)
                 var = varlist[data]
                 print(var)
-                if var is not None or var!="TLAKE.nc": lib.proc.ts_masks(fdir, var, seas, masks[k])
+                if var is not None: lib.proc.ts_masks(fdir, var, seas, masks[k])
 
 main()
