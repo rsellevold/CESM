@@ -13,6 +13,23 @@ def _checkdir(folder):
     os.system(f"mkdir -p {folder}")
 
 
+def _getfnames(config, comp, var, hfile):
+  if config["history"]["ts"]:
+    fnames_all = []
+    for key,item in config["runs"].items():
+      fnames = glob.glob(f"{config['runs'][key]['folder']}/{key}/{comp}/proc/tseries/{config['history'][comp][hfile]['tstype']}/*.{hfile}.{var}.*.nc")
+      fnames_all.append(fnames)
+    fnames_all = [item for sublist in fnames_all for item in sublist]
+  if not(config["history"]["ts"]):
+    fnames_all = []
+    for key,item in config["runs"].items():
+      fnames = glob.glob(f"{config['runs'][key]['folder']}/{key}/{comp}/hist/*.{hfile}.*.nc")
+      fnames_all.append(fnames)
+    fnames_all = [item for sublist in fnames_all for item in sublist]
+  return fnames_all
+
+
+
 def monavg(fdir, var):
   # Computes monthly means
   outdir = f"{fdir[:-7]}/monavg"
@@ -45,18 +62,7 @@ def mergehist(config, comp, var, hfile, htype):
   outfolder = f"{config['run']['folder']}/{config['run']['name']}/{comp}/hist/{htype}"
   _checkdir(outfolder)
 
-  if config["history"]["ts"]:
-    fnames_all = []
-    for key,item in config["runs"].items():
-      fnames = glob.glob(f"{config['runs'][key]['folder']}/{key}/{comp}/proc/tseries/{config['history'][comp][hfile]['tstype']}/*.{hfile}.{var}.*.nc")
-      fnames_all.append(fnames)
-    fnames_all = [item for sublist in fnames_all for item in sublist]
-  if not(config["history"]["ts"]):
-    fnames_all = []
-    for key,item in config["runs"].items():
-      fnames = glob.glob(f"{config['runs'][key]['folder']}/{key}/{comp}/hist/*.{hfile}.*.nc")
-      fnames_all.append(fnames)
-    fnames_all = [item for sublist in fnames_all for item in sublist]
+  fnames_all = _getfnames(config, comp, var, hfile)
 
   os.system(f"mkdir -p {outfolder[:-12]}/temp")
 
@@ -120,6 +126,9 @@ def mergehist(config, comp, var, hfile, htype):
     data_already.close()
   except FileNotFoundError:
     None
+
+  ### Add interpolation code here
+  ### Save dataset to "temp", then run the interpolation
 
   data.encoding["unlimited_dims"] = "time"
   data.to_netcdf(f"{outfolder}/{var}.nc")
