@@ -1,34 +1,23 @@
 # Details about the machine
 machine:
-  codepath: "/home/raymond/CESMpy"
-  directive: ["#SBATCH", "-N 1", "--time 01:00:00", "-p normal"]
-  nproc: 24
-  mpi: True
-  condaact: "/home/raymond/miniconda3/bin/activate"
-  condaenv: "LGM"
+    codepath: "/home/raymond/CESMpy"
+    directive: ["#SBATCH", "-N 1", "--time 01:00:00", "-p normal"]
+    nproc: 24
+    mpi: True
+    condaact: "/home/raymond/miniconda3/bin/activate"
+    condaenv: "LGM"
 
 # Detail about the run
 run:
-  name: "LGM"
-  folder: "/scratch-shared/raymond"
-  plotdir: "/home/raymond/LGMplots"
+    name: "LGM"
+    folder: "/scratch-shared/raymond"
+    plotdir: "/home/raymond/LGMplots"
   
 # Runs to be analyzed
 runs:
-#  B-I-LGM-rest286-200729:
-#    folder: "/projects/0/couplice/archive"
-#  B-I-LGM-rest316-200804:
-#    folder: "/projects/0/couplice/archive"
-#  B-I-LGM-rest331-200814:
-#    folder: "/projects/0/couplice/archive"
-#  B-I-LGM-rest338-200817:
-#    folder: "/projects/0/couplice/archive"
-#  B-I-rest356-LGM-200828:
-#    folder: "/projects/0/couplice/archive"
-#  B-I-rest371-LGM-200902:
-#    folder: "/projects/0/couplice/archive"
-  B-I-rest428-LGM-200920:
-    folder: "/projects/0/couplice/archive"
+    B-I-LGM-rest286-200729:
+        folder: "/projects/0/couplice/archive"
+
     
 # Specific settings for components
 compset:
