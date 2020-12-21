@@ -3,6 +3,8 @@ import sys,os,glob,math
 import xarray as xr
 import cftime
 from cdo import Cdo
+import Ngl
+import numpy as np
 
 cdo = Cdo()
 
@@ -74,8 +76,12 @@ def mergehist(config, comp, var, hfile, htype):
 
   for i in range(nfiles+1):
     fstring = " ".join(fnames_all[i*100:(i+1)*100])
+    if comp=="atm":
+      varsget = f"{var},hyam,hybm"
+    else:
+      varsget = f"{var}"
     if i==0:
-      os.system(f"ncrcat -v {var} {fstring} {outfolder[:-12]}/temp/{var}.nc")
+      os.system(f"ncrcat -v {varsget} {fstring} {outfolder[:-12]}/temp/{var}.nc")
     else:
       os.system(f"ncrcat -O -v {var} {fstring} {outfolder[:-12]}/temp/{var}.nc {outfolder[:-12]}/temp/{var}.nc")
 
@@ -103,6 +109,23 @@ def mergehist(config, comp, var, hfile, htype):
     data = f[var][:,1,0,:,:]
   else:
     data = f[var]
+
+  if comp=="atm" and data.ndim==4:
+    nt = len(data.time.values)
+    plev = config["compset"]["atm"]["plev"]
+    data_new = np.empty(shape=(nt, len(plev), data.shape[-2], data.shape[-1]))
+    try:
+      PS = f.PS
+    except AttributeError:
+      fPS = xr.open_dataset(f"{outfolder}/PS.nc")
+      tmin = data.time.min()
+      tmax = data.time.max()
+      PS = fPS.PS.sel(time=slice(tmin,tmax))
+    for t in range(nt):
+      print(t)
+      data_new[t,:,:,:] = Ngl.vinth2p(data.values[t,:,:,:], f.hyam.values, f.hybm.values, plev, PS.values[t,:,:], 1, 1000., 1, True)
+    data = xr.DataArray(data_new, name=var, dims=("time","lev","lat","lon"), coords=[data.time, plev, data.lat, data.lon])
+
   data = data.to_dataset()
 
   try: # Check if previous data exists
@@ -126,9 +149,6 @@ def mergehist(config, comp, var, hfile, htype):
     data_already.close()
   except FileNotFoundError:
     None
-
-  ### Add interpolation code here
-  ### Save dataset to "temp", then run the interpolation
 
   data.encoding["unlimited_dims"] = "time"
   data.to_netcdf(f"{outfolder}/{var}.nc")
