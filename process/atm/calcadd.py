@@ -101,6 +101,19 @@ def calcadd(fdir, var):
         except:
             None
 
+    elif var=="FSDTOA":
+        try:
+            FSNTOA = xr.open_dataset(f"{fdir}/FSNTOA.nc")
+            FSUTOA = xr.open_dataset(f"{fdir}/FSUTOA.nc")
+            FSDTOA = FSNTOA["FSNTOA"] + FSUTOA["FSUTOA"]
+            FSDTOA.name = "FSDTOA"
+            FSDTOA.to_dataset()
+            FSDTOA.encoding["unlimited_dims"] = "time"
+            FSDTOA.to_netcdf(f"{fdir}/FSDTOA.nc")
+            FSDTOA.close()
+        except:
+            None
+
 
 def main():
     # Initialize MPI
@@ -109,7 +122,7 @@ def main():
     size = comm.Get_size()
 
     fdir = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/monavg"
-    varlist = ["ALBEDO", "PRECT", "SNOW", "RAIN", "RADTOA", "FSCF", "FLCF"]
+    varlist = ["ALBEDO", "PRECT", "SNOW", "RAIN", "RADTOA", "FSCF", "FLCF", "FSDTOA"]
     varlist = lib.mpimods.check_varlist(varlist, size)
 
     for i in range(int(len(varlist)/size)):
