@@ -14,14 +14,17 @@ def main():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
+    comp = sys.argv[1]
+    times = sys.argv[2]
+
     # Get config
     with open("config.yml","r") as f:
         config = yaml.safe_load(f)
 
-    for seas in ["DJFavg", "MAMavg", "JJAavg", "SONavg", "annavg"]:
+    for seas in times:
         if rank==0:
             print(seas)
-        fdir = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/{seas}"
+        fdir = f"{config['run']['folder']}/{config['run']['name']}/{comp}/hist/{seas}"
         varlist = os.popen(f"ls {fdir}").read().split("\n")[:-1]
         varlist = lib.mpimods.check_varlist(varlist,size)
 
