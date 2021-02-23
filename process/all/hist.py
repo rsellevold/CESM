@@ -13,11 +13,13 @@ def main():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    hfiles = list(config["history"]["ocn"].keys())
+    comp = sys.argv[1]
+
+    hfiles = list(config["history"][comp].keys())
     for h in range(len(hfiles)):
-        varlist = config["history"]["ocn"][hfiles[h]]["varlist"]
+        varlist = config["history"][comp][hfiles[h]]["varlist"]
         varlist = lib.mpimods.check_varlist(varlist,size)
-        htype = config["history"]["ocn"][hfiles[h]]["htype"]
+        htype = config["history"][comp][hfiles[h]]["htype"]
 
         for i in range(int(len(varlist)/size)):
             if rank==0:
@@ -27,6 +29,6 @@ def main():
             data = comm.scatter(data, root=0)
             var = varlist[data]
             print(var)
-            if var is not None: lib.preproc.mergehist(config, "ocn", var, hfiles[h], htype)
+            if var is not None: lib.preproc.mergehist(config, comp, var, hfiles[h], htype)
 
 main()

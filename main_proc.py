@@ -2,23 +2,19 @@ import yaml
 with open("config.yml","r") as f:
     config = yaml.safe_load(f)
 
-scripts = ["process/atm/hist",
+scripts = ["process/all/hist",
            "process/atm/calcadd",
            "process/atm/avg_mon2seas",
            "process/atm/avg_mon2ann",
            "process/atm/trends",
-	   "process/atm/timeseries",
-           "process/lnd/hist",
+	       "process/atm/timeseries",
            "process/lnd/calcadd",
            "process/lnd/avg_mon2seas",
            "process/lnd/avg_mon2ann",
            "process/lnd/trends",
            "process/lnd/timeseries",
-           "process/ocn/hist",
            "process/ocn/avg_mon2ann",
-           "process/ice/hist",
-           "process/ice/avg_mon2seas",
-           "process/glc/hist"]
+           "process/ice/avg_mon2seas"]
 
 nproc = config["machine"]["nproc"]
 
