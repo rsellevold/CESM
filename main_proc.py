@@ -3,18 +3,14 @@ with open("config.yml","r") as f:
     config = yaml.safe_load(f)
 
 scripts = ["process/all/hist",
+           "process/all/avg_mon2ann",
+           "process/all/avg_mon2seas",
            "process/atm/calcadd",
-           "process/atm/avg_mon2seas",
-           "process/atm/avg_mon2ann",
            "process/atm/trends",
 	       "process/atm/timeseries",
            "process/lnd/calcadd",
-           "process/lnd/avg_mon2seas",
-           "process/lnd/avg_mon2ann",
            "process/lnd/trends",
-           "process/lnd/timeseries",
-           "process/ocn/avg_mon2ann",
-           "process/ice/avg_mon2seas"]
+           "process/lnd/timeseries"]
 
 nproc = config["machine"]["nproc"]
 

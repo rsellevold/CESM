@@ -14,7 +14,9 @@ def main():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    fdir = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/monavg"
+    comp = sys.argv[1]
+
+    fdir = f"{config['run']['folder']}/{config['run']['name']}/{comp}/hist/monavg"
     varlist = os.popen(f"ls {fdir}").read().split("\n")[:-1]
     varlist = lib.mpimods.check_varlist(varlist,size)
 
@@ -26,6 +28,6 @@ def main():
         data = comm.scatter(data, root=0)
         var = varlist[data]
         print(var)
-        if var is not None: lib.preproc.seasavg(fdir, var)
+        if var is not None: lib.preproc.annavg(fdir, var)
 
 main()
