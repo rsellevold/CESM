@@ -9,3 +9,13 @@ def check_varlist(varlist,nproc):
     for j in range(rest):
       varlist.append(None)
   return varlist
+
+
+def make_varlist(config,comps):
+    varlist = []
+    for comp in comps:
+        for hfile in config["history"][comp].keys():
+            for key in config["history"][comp][hfile]["varlist"]:
+                varlist.append([comp,hfile,key,config["history"][comp][hfile]["htype"])
+
+    return varlist
