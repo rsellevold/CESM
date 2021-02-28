@@ -14,6 +14,7 @@ def main():
     size = comm.Get_size()
 
     comp = sys.argv[1]
+    comp = comp.split(",")
     varlist = lib.mpimods.make_varlist(config,comp)
     varlist = lib.mpimods.check_varlist(varlist,size)
 
@@ -27,6 +28,6 @@ def main():
 
         print(var)
         if var is not None:
-            lib.preproc.mergehist(config, var[i,0], var[i,2], var[i,1], var[i,3]) 
+            lib.preproc.mergehist(config, var[0], var[2], var[1], var[3]) 
 
 main()

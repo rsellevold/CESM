@@ -29,18 +29,20 @@ def _getfnames(config, comp, var, hfile):
             fnames = glob.glob(f"{config['runs'][key]['folder']}/{key}/{comp}/hist/*.{hfile}.*.nc")
             fnames_all.append(fnames)
         fnames_all = [item for sublist in fnames_all for item in sublist]
-  return fnames_all
+    return fnames_all
 
 
-def _removeSameTime(fnames_all, bndname, starttime):
-    for fname in fnames_all:
+def _removeSameTime(fnames_all, comp, bndname, endtime):
+    for fname in fnames_all.copy():
         f = Dataset(fname, "r")
         if comp!="glc":
             timestamp = np.array((f.variables[bndname][-1,0]+f.variables[bndname][-1,1])/2)
+            timestamp = cftime.num2date(timestamp, f.variables["time"].units, calendar="noleap")
         else:
             timestamp = np.array(f.variables["time"][-1]) - 1
-        if starttime <= timestamp:
+        if endtime >= timestamp:
             fnames_all.remove(fname)
+        f.close()
     return fnames_all
 
 
@@ -87,81 +89,91 @@ def mergehist(config, comp, var, hfile, htype):
 
     # Open earlier file (if it exists), to remove files with same timestamp
     try:
-        data_already = xr.open_dataset(f"{outfolder}/{var}.nc", decode_times=False)
-        starttime = data_already.time.min().values
+        if comp != "glc":
+            data_already = xr.open_dataset(f"{outfolder}/{var}.nc")
+        else:
+            data_already = xr.open_dataset(f"{outfolder}/{var}.nc", decode_times=False)
+        endtime = data_already.time.max().values
         prevDataExists = True
     except FileNotFoundError:
-        None
+        prevDataExists = False
 
-    bndname = config["compset"][comp]["bnds"]
-    fnames_all = _removeSameTime(fnames_all, bndname, endtime)
+    if comp!="glc":
+        bndname = config["compset"][comp]["bnds"]
+    else:
+        bndname = None
+    if prevDataExists:
+        fnames_all = _removeSameTime(fnames_all, comp, bndname, endtime)
 
     nfiles = math.floor(len(fnames_all)/100)
 
-    for i in range(nfiles+1):
-        fstring = " ".join(fnames_all[i*100:(i+1)*100])
-        if comp=="atm":
-            varsget = f"{var},hyam,hybm"
+    if nfiles>0:
+        for i in range(nfiles+1):
+            fstring = " ".join(fnames_all[i*100:(i+1)*100])
+            if comp=="atm":
+              varsget = f"{var},hyam,hybm"
+            else:
+                varsget = f"{var}"
+            if i==0:
+                os.system(f"ncrcat -v {varsget} {fstring} {outfolder[:-12]}/temp/{var}.nc")
+            else:
+                os.system(f"ncrcat -O -v {var} {fstring} {outfolder[:-12]}/temp/{var}.nc {outfolder[:-12]}/temp/{var}.nc")
+
+        if comp=="glc":
+            f = xr.open_dataset(f"{outfolder[:-12]}/temp/{var}.nc", decode_times=False)
         else:
-            varsget = f"{var}"
-        if i==0:
-            os.system(f"ncrcat -v {varsget} {fstring} {outfolder[:-12]}/temp/{var}.nc")
+            f = xr.open_dataset(f"{outfolder[:-12]}/temp/{var}.nc")
+            timeunit = Dataset(f"{outfolder[:-12]}/temp/{var}.nc","r").variables["time"].units
+        f = f.sortby("time")
+
+        if comp!="glc":
+            try:
+                bnds = cftime.date2num(f[config["compset"][comp]["bnds"]].values, timeunit, calendar="noleap")
+            except:
+                sys.exit("Provided time bounds does not exsist, update config.yml: compset/[component]/bnds")
+
+            bnds = (bnds[:,0]+bnds[:,1])/2
+            bnds = cftime.num2date(bnds, timeunit, calendar="noleap")
+            bnds = xr.DataArray(bnds, name="time", dims=("time"))
+            bnds.attrs["long_name"] = f.time.long_name
+            f["time"] = bnds
         else:
-            os.system(f"ncrcat -O -v {var} {fstring} {outfolder[:-12]}/temp/{var}.nc {outfolder[:-12]}/temp/{var}.nc")
+            f["time"] = f.time-1
 
-    if comp=="glc":
-        f = xr.open_dataset(f"{outfolder[:-12]}/temp/{var}.nc", decode_times=False)
-        timeunit = f.time.units.replace("common_year","years")
+
+        if comp=="ocn" and var=="MOC":
+            data = f[var][:,1,0,:,:]
+        else:
+            data = f[var]
+
+        if comp=="atm" and data.ndim==4:
+            nt = len(data.time.values)
+            plev = config["compset"]["atm"]["plev"]
+            data_new = np.empty(shape=(nt, len(plev), data.shape[-2], data.shape[-1]))
+            try:
+                PS = f.PS
+            except AttributeError:
+                fPS = xr.open_dataset(f"{outfolder}/PS.nc")
+                tmin = data.time.min()
+                tmax = data.time.max()
+                PS = fPS.PS.sel(time=slice(tmin,tmax))
+            for t in range(nt):
+                print(t)
+                data_new[t,:,:,:] = Ngl.vinth2p(data.values[t,:,:,:], f.hyam.values, f.hybm.values, plev, PS.values[t,:,:], 1, 1000., 1, True)
+            data = xr.DataArray(data_new, name=var, dims=("time","lev","lat","lon"), coords=[data.time, plev, data.lat, data.lon])
+
+        data = data.to_dataset()
+
+        if prevDataExists:
+            data = xr.concat([data_already, data], dim="time")
+            data = data.sortby("time")
+            data_already.close()
+
+        data.encoding["unlimited_dims"] = "time"
+        data.to_netcdf(f"{outfolder}/{var}.nc", encoding={"time": {"dtype":"float"}})
+
+        data.close()
+        f.close()
+        os.system(f"rm {outfolder[:-12]}/temp/{var}.nc")
     else:
-        f = xr.open_dataset(f"{outfolder[:-12]}/temp/{var}.nc")
-        timeunit = Dataset(f"{outfolder[:-12]}/temp/{var}.nc","r").variables["time"].units
-    f = f.sortby("time")
-
-    if comp!="glc":
-        try:
-            bnds = cftime.date2num(f[config["compset"][comp]["bnds"]].values, timeunit, calendar="noleap")
-        except:
-            sys.exit("Provided time bounds does not exsist, update config.yml: compset/[component]/bnds")
-
-        bnds = (bnds[:,0]+bnds[:,1])/2
-        bnds = cftime.num2date(bnds, timeunit, calendar="noleap")
-        bnds = xr.DataArray(bnds, name="time", dims=("time"))
-        bnds.attrs["long_name"] = f.time.long_name
-        f["time"] = bnds
-    else:
-        f["time"] = cftime.num2date(f.time.values-1, timeunit, calendar="noleap")
-
-    if comp=="ocn" and var=="MOC":
-        data = f[var][:,1,0,:,:]
-    else:
-        data = f[var]
-
-    if comp=="atm" and data.ndim==4:
-        nt = len(data.time.values)
-        plev = config["compset"]["atm"]["plev"]
-        data_new = np.empty(shape=(nt, len(plev), data.shape[-2], data.shape[-1]))
-        try:
-            PS = f.PS
-        except AttributeError:
-            fPS = xr.open_dataset(f"{outfolder}/PS.nc")
-            tmin = data.time.min()
-            tmax = data.time.max()
-            PS = fPS.PS.sel(time=slice(tmin,tmax))
-        for t in range(nt):
-            print(t)
-            data_new[t,:,:,:] = Ngl.vinth2p(data.values[t,:,:,:], f.hyam.values, f.hybm.values, plev, PS.values[t,:,:], 1, 1000., 1, True)
-        data = xr.DataArray(data_new, name=var, dims=("time","lev","lat","lon"), coords=[data.time, plev, data.lat, data.lon])
-
-    data = data.to_dataset()
-
-    if prevDataExists:
-        data = xr.concat([data_already, data], dim="time")
-        data = data.sortby("time")
         data_already.close()
-
-    data.encoding["unlimited_dims"] = "time"
-    data.to_netcdf(f"{outfolder}/{var}.nc")
-
-    data.close()
-    f.close()
-    os.system(f"rm {outfolder[:-12]}/temp/{var}.nc")
