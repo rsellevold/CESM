@@ -19,3 +19,5 @@ def make_varlist(config,comps):
                 varlist.append([comp,hfile,key,config["history"][comp][hfile]["htype"]])
 
     return varlist
+
+def make_varlist2(comps, varlist, fdir):
