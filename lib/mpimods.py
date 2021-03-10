@@ -22,10 +22,31 @@ def make_varlist(config,comps):
 
     return varlist
 
+
 def make_varlist2(fdir):
     varlist = []
     for i in fdir:
         vlist = os.popen(f"ls {i}").read().split("\n")[:-1]
         for v in vlist:
             varlist.append([i,v])
+    return varlist
+
+
+def make_varlist3(fdir, regions):
+    varlist = []
+    for i in fdir:
+        vlist = os.popen(f"ls {i[0]}").read().split("\n")[:-1]
+        for v in vlist:
+            for reg in regions:
+                varlist.append([i[0],i[1],v,reg])
+
+    return varlist
+
+
+def make_varlist4(fdir):
+    varlist = []
+    for i in fdir:
+        vlist = os.popen(f"ls {i[0]}").read().split("\n")[:-1]
+        for v in vlist:
+            varlist.append([i[0], i[1], v])
     return varlist

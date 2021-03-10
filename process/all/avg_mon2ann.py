@@ -15,9 +15,12 @@ def main():
     size = comm.Get_size()
 
     comp = sys.argv[1]
+    comp = comp.split(",")
 
-    fdir = f"{config['run']['folder']}/{config['run']['name']}/{comp}/hist/monavg"
-    varlist = os.popen(f"ls {fdir}").read().split("\n")[:-1]
+    fdir = []
+    for c in comp:
+        fdir.append(f"{config['run']['folder']}/{config['run']['name']}/{c}/hist/monavg")
+    varlist = lib.mpimods.make_varlist2(fdir)
     varlist = lib.mpimods.check_varlist(varlist,size)
 
     for i in range(int(len(varlist)/size)):
@@ -28,6 +31,6 @@ def main():
         data = comm.scatter(data, root=0)
         var = varlist[data]
         print(var)
-        if var is not None: lib.preproc.annavg(fdir, var)
+        if var is not None: lib.preproc.annavg(var[0], var[1])
 
 main()
