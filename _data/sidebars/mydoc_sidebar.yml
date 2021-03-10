@@ -35,3 +35,12 @@ entries:
     - title: About the theme author
       url: /mydoc_about.html
       output: web, pdf
+
+  - title: Process
+    output: web, pdf
+    folderitems:
+
+    - title: All
+      url: /process_all.html
+      output: web, pdf
+      type: homepage
