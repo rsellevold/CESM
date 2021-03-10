@@ -1,3 +1,5 @@
+import os
+
 def check_varlist(varlist,nproc):
     nv = int(len(varlist)/nproc)
     create_new = False
@@ -20,4 +22,10 @@ def make_varlist(config,comps):
 
     return varlist
 
-def make_varlist2(comps, varlist, fdir):
+def make_varlist2(fdir):
+    varlist = []
+    for i in fdir:
+        vlist = os.popen(f"ls {i}").read().split("\n")[:-1]
+        for v in vlist:
+            varlist.append([i,v])
+    return varlist
