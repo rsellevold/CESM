@@ -2,7 +2,7 @@
 
 entries:
 - title: sidebar
-  product: CESM py
+  product: CESMpy
   version: 0.0
   folders:
 
@@ -34,8 +34,4 @@ entries:
 
     - title: About the theme author
       url: /mydoc_about.html
-      output: web, pdf
-
-    - title: Support
-      url: /mydoc_support.html
       output: web, pdf
