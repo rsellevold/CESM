@@ -1,9 +1,13 @@
+import numpy as np
+import xarray as xr
+
 ####################
 # contributed.ncl
 ####################
 
 def lonFlip(f, keys):
     mlon = int(f.lon.values.shape[0])
+    print(mlon%2)
     if mlon%2 != 0:
         sys.exit(f"lib.ncl.lonFlip: Number of longitudes not even number ({mlon})")
     mlon2 = int(mlon/2)
@@ -17,9 +21,9 @@ def lonFlip(f, keys):
     data = []
     for key in keys:
         var = np.copy(f[key].values)
-        var[...,0:mlon2] = f[key].values[...,mlon2:]
-        var[...,mlon2:] = f[key].values[...,0:mlon2]
-        data.append(xr.DataArray(vars()[key], name=key, dims=f[key].dims, coords=f[key].coords, attrs=f[key].attrs))
+        var[...,0:mlon2] = np.copy(f[key].values[...,mlon2:])
+        var[...,mlon2:] = np.copy(f[key].values[...,0:mlon2])
+        data.append(xr.DataArray(var, name=key, dims=("time","lat","lon"), coords=[f.time,f.lat,lon], attrs=f[key].attrs))
 
     fnew = xr.merge(data)
     return fnew
