@@ -14,6 +14,10 @@ def northatlantic_jet(config):
     # Load data
     f = xr.open_mfdataset(fnames)
 
-    f = misc.sellatlon(f, lats=(15,75))
     f = ncl.lonFlip(f, ["U925","U850","U775","U700"])
+    f = misc.sellatlon(f, lats=(15,75), lons=(-60,0))
+
+    data = (f["U925"].values + f["U850"].values + f["U775"].values + f["U700"].values) / 4.0
+    data = np.nanmean(data, axis=-1)
+
 
