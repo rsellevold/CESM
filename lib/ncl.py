@@ -1,7 +1,7 @@
 import numpy as np
 import xarray as xr
 
-import nclf
+from .nclf import *
 
 ####################
 # contributed.ncl
@@ -9,7 +9,6 @@ import nclf
 
 def lonFlip(f, keys):
     mlon = int(f.lon.values.shape[0])
-    print(mlon%2)
     if mlon%2 != 0:
         sys.exit(f"lib.ncl.lonFlip: Number of longitudes not even number ({mlon})")
     mlon2 = int(mlon/2)
@@ -25,7 +24,12 @@ def lonFlip(f, keys):
         var = np.copy(f[key].values)
         var[...,0:mlon2] = np.copy(f[key].values[...,mlon2:])
         var[...,mlon2:] = np.copy(f[key].values[...,0:mlon2])
-        data.append(xr.DataArray(var, name=key, dims=("time","lat","lon"), coords=[f.time,f.lat,lon], attrs=f[key].attrs))
+        if var.ndim==3:
+            data.append(xr.DataArray(var, name=key, dims=("time","lat","lon"), coords=[f.time,f.lat,lon], attrs=f[key].attrs))
+        elif var.ndim==4:
+            data.append(xr.DataArray(var, name=key, dims=("time","lev","lat","lon"), coords=[f.time,f.lev,f.lat,lon], attrs=f[key].attrs))
+        else:
+            sys.exit("Cannot understand dimensions")
 
     fnew = xr.merge(data)
     return fnew
@@ -42,11 +46,11 @@ def lanczos_filter(data, nwt, ihp, fca, fcb, nsigma, kopt, fillval):
     fillval = float(fillval)
     data_new[np.isnan(data_new)] = fillval
 
-    wgt, resp, freq = nclf.dfiltrq(nwt, ihp, fca, fcb, nsigma)
+    wgt, resp, freq = dfiltrq(nwt, ihp, fca, fcb, nsigma)
 
     lwork = int(len(data_new) + 2*(len(wgt)/2))
     
-    ier = nclf.dwgtrunave(data_new, wgt, kopt, fillval, lwork)
+    ier = dwgtrunave(data_new, wgt, kopt, fillval, lwork)
     if ier != 0:
         sys.exit("ncl:lanczos filter: error")
 

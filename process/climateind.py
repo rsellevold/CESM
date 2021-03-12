@@ -15,11 +15,11 @@ def main():
     size = comm.Get_size()
 
     tasks = sys.argv[1]
-    comp = comp.split(",")
+    tasks = tasks.split(",")
 
     tasks = lib.mpimods.check_varlist(tasks, size)
 
-    for i in range(int(len(varlist)/size)):
+    for i in range(int(len(tasks)/size)):
         if rank==0:
             data = [(i*size)+k for k in range(size)]
         else:
@@ -27,7 +27,7 @@ def main():
         data = comm.scatter(data, root=0)
         var = tasks[data]
 
-        if var=="najet":
+        if var=="na_jet":
             lib.atmosphere.northatlantic_jet(config)
         else:
             None
