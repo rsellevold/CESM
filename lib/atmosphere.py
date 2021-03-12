@@ -20,4 +20,19 @@ def northatlantic_jet(config):
     data = (f["U925"].values + f["U850"].values + f["U775"].values + f["U700"].values) / 4.0
     data = np.nanmean(data, axis=-1)
 
+    ny = int(data.shape[1])
+    for y in range(ny):
+        data[:,y] = ncl.lanczos_filter(data[:,y], 61, 0, 1./10., -999, 1, 1, 1e+36)
 
+    speed = np.nanmax(data, axis=1)
+    lats = f.lat.values[np.argmax(data, axis=1)]
+
+    speed = xr.DataArray(speed, name="speed", dims=("time"), coords=[f.time])
+    lats = xr.DataArray(lats, name="latitude", dims=("time"), coords=[f.time])
+
+    fout = xr.merge([speed,lats])
+    fout.encoding["unlimited_dims"] = "time"
+
+    outdir = f"{config['run']['folder']}/{config['run']['name']}/atm/climateind/dayavg"
+
+    fout.to_netcdf(f"{outdir}/na_jet.nc")
