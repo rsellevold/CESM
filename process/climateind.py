@@ -28,7 +28,7 @@ def main():
         var = tasks[data]
 
         if var=="na_jet":
-            lib.atmosphere.northatlantic_jet(config)
+            lib.climateind.northatlantic_jet(config)
         else:
             None
 
