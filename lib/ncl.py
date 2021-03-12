@@ -53,5 +53,6 @@ def lanczos_filter(data, nwt, ihp, fca, fcb, nsigma, kopt, fillval):
     ier = dwgtrunave(data_new, wgt, kopt, fillval, lwork)
     if ier != 0:
         sys.exit("ncl:lanczos filter: error")
+    data_new[data_new==fillval] = np.nan
 
     return data_new
