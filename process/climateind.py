@@ -29,6 +29,8 @@ def main():
 
         if var=="na_jet":
             lib.climateind.northatlantic_jet(config)
+        if var=="amo":
+            lib.climateind.amo(config)
         else:
             None
 
