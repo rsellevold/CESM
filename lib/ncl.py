@@ -1,6 +1,8 @@
 import numpy as np
 import xarray as xr
 
+import nclf
+
 ####################
 # contributed.ncl
 ####################
@@ -27,3 +29,25 @@ def lonFlip(f, keys):
 
     fnew = xr.merge(data)
     return fnew
+
+
+#####################
+# NCL fortran routines
+####################
+
+# Lanczos filtering
+def lanczos_filter(data, nwt, ihp, fca, fcb, nsigma, kopt, fillval):
+    data_new = np.copy(data)
+
+    fillval = float(fillval)
+    data_new[np.isnan(data_new)] = fillval
+
+    wgt, resp, freq = nclf.dfiltrq(nwt, ihp, fca, fcb, nsigma)
+
+    lwork = int(len(data_new) + 2*(len(wgt)/2))
+    
+    ier = nclf.dwgtrunave(data_new, wgt, kopt, fillval, lwork)
+    if ier != 0:
+        sys.exit("ncl:lanczos filter: error")
+
+    return data_new
