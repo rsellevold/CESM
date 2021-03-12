@@ -11,7 +11,8 @@ scripts = ["process/all/hist.py <components>",
            "process/all/avg_mon2seas.py <components>",
            "process/all/timeseries.py <components> <time>",
            "process/all/trends.py <components> <time>",
-           "process/all/timeseries_masks.py <components> <time> <path-to-mask>"]
+           "process/all/timeseries_masks.py <components> <time> <path-to-mask>",
+           "process/climateind.py <tasks>"]
 
 nproc = config["machine"]["nproc"]
 
