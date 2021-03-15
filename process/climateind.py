@@ -31,6 +31,8 @@ def main():
             lib.climateind.northatlantic_jet(config)
         if var=="amo":
             lib.climateind.amo(config)
+        if var=="GBI":
+            lib.climateind.GBI(config)
         else:
             None
 

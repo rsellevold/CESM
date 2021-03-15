@@ -74,3 +74,44 @@ def amo(config):
         os.system(f"mkdir -p {outdir}")
 
     AMO.to_netcdf(f"{outdir}/AMO.nc")
+
+
+def GBI(config):
+    try:
+        fname = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/JJAavg/Z3.nc"
+        f = xr.open_dataset(fname)
+        multilevel=True
+    except FileNotFoundError:
+        fname = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/JJAavg/Z500.nc"
+        f = xr.open_dataset(fname)
+        multilevel=False
+
+    if multilevel:
+        data = f.sel(lev=[500])["Z3"].values
+    else:
+        data = f["Z3"].values
+
+    cdo = Cdo()
+    area = cdo.gridarea(input=f, returnXDataset=True)
+    gridarea = np.copy(area.cell_area.values)
+    area.close()
+
+    gridarea[np.isnan(data)] = np.nan
+
+    lat1, lat2 = findnearest((60,80), f.lat.values)
+    lon1, lon2 = findnearest((280,340), f.lon.values)
+
+    GBI1 = np.nansum(data[:,lat1:lat2,lon1:lon2]*gridarea[np.newaxis,lat1:lat2,lon1:lon2], axis=(1,2))/np.nansum(gridarea[lat1:lat2,lon1:lon2])
+    GBI2 = GBI1 - (np.nansum(data[:,lat1:lat2,:]*gridarea[np.newaxis,lat1:lat2,:], axis=(1,2))/np.nansum(gridarea[lat1:lat2,:]))
+
+    GBI1 = xr.DataArray(GBI1, name="GBI1", dims=("time"), coords=[f.time])
+    GBI2 = xr.DataArray(GBI2, name="GBI2", dims=("time"), coords=[f.time])
+
+    GBI = xr.merge([GBI1,GBI2])
+    GBI.encoding["unlimited_dims"] = "time"
+
+    outdir = f"{config['run']['folder']}/{config['run']['name']}/atm/climateind/JJAavg"
+    if not(os.path.exists(outdir)):
+        os.system(f"mkdir -p {outdir}")
+
+    GBI.to_netcdf(f"{outdir}/GBI.nc")
