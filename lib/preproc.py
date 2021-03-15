@@ -146,6 +146,9 @@ def mergehist(config, comp, var, hfile, htype):
         else:
             data = f[var]
 
+        if htype=="dayavg":
+            data = data[1:]
+
         if comp=="atm" and data.ndim==4:
             nt = len(data.time.values)
             plev = config["compset"]["atm"]["plev"]
