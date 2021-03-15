@@ -123,6 +123,8 @@ def ts(fdir, var, seas, region):
     data = areastat(f[key].sel(lat=slice(-90,0)).values, farea.sel(lat=slice(-90,0)).cell_area.values, arith=arith)
   elif region=="tropical":
     data = areastat(f[key].sel(lat=slice(-30,30)).values, farea.sel(lat=slice(-30,30)).cell_area.values, arith=arith)
+  elif region=="arctic":
+    data = areastat(f[key].sel(lat=slice(60,90)).values, farea.sel(lat=slice(60,90)).cell_area.values, arith=arith)
   else:
     sys.exit("Undefined region")
 
