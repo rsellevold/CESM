@@ -36,4 +36,4 @@ for i in range(len(scripts)):
             procfile.write(f"mpiexec -n {config['machine']['nproc']} python {config['machine']['codepath']}/{scripts[i]}\n")
 
     else:
-        procfile.write(f"python {config['machine']['codepath']}/{scripts[i]}.py\n")
+        procfile.write(f"python {config['machine']['codepath']}/{scripts[i]}\n")

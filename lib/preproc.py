@@ -107,7 +107,7 @@ def mergehist(config, comp, var, hfile, htype):
 
     nfiles = math.floor(len(fnames_all)/100)
 
-    if nfiles>0:
+    if len(fnames_all)>0:
         for i in range(nfiles+1):
             fstring = " ".join(fnames_all[i*100:(i+1)*100])
             if comp=="atm":
@@ -158,7 +158,6 @@ def mergehist(config, comp, var, hfile, htype):
                 tmax = data.time.max()
                 PS = fPS.PS.sel(time=slice(tmin,tmax))
             for t in range(nt):
-                print(t)
                 data_new[t,:,:,:] = Ngl.vinth2p(data.values[t,:,:,:], f.hyam.values, f.hybm.values, plev, PS.values[t,:,:], 1, 1000., 1, True)
             data = xr.DataArray(data_new, name=var, dims=("time","lev","lat","lon"), coords=[data.time, plev, data.lat, data.lon])
 
@@ -175,5 +174,5 @@ def mergehist(config, comp, var, hfile, htype):
         data.close()
         f.close()
         os.system(f"rm {outfolder[:-12]}/temp/{var}.nc")
-    else:
+    elif len(fnames_all)==0 and prevDataExists:
         data_already.close()
