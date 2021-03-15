@@ -33,6 +33,8 @@ def main():
             lib.climateind.amo(config)
         if var=="GBI":
             lib.climateind.GBI(config)
+        if var=="seaice_index":
+            lib.climateind.seaice_index(config)
         else:
             None
 

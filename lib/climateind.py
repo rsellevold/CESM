@@ -115,3 +115,35 @@ def GBI(config):
         os.system(f"mkdir -p {outdir}")
 
     GBI.to_netcdf(f"{outdir}/GBI.nc")
+
+
+def seaice_index(config):
+    fname = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/monavg/ICEFRAC.nc"
+    f = xr.open_dataset(fname)
+
+    data = f["ICEFRAC"].values
+    data[data<0.15] = np.nan
+
+    cdo = Cdo()
+    area = cdo.gridarea(input=f, returnXDataset=True)
+    gridarea = np.copy(area.cell_area.values)
+    area.close()
+    gridarea[np.isnan(data)] = np.nan
+
+    lat1, lat2 = findnearest((-90,0), f.lat.values)
+    antarctic = np.nansum(data[:,lat1:lat2,:]*gridarea[np.newaxis,lat1:lat2,:], axis=(1,2))/np.nansum(gridarea[lat1:lat2,:])
+
+    lat1, lat2 = findnearest((0,90), f.lat.values)
+    arctic = np.nansum(data[:,lat1:lat2,:]*gridarea[np.newaxis,lat1:lat2,:], axis=(1,2))/np.nansum(gridarea[lat1:lat2,:])
+
+    antarctic = xr.DataArray(antarctic, name="antarctic", dims=("time"), coords=[f.time])
+    arctic = xr.DataArray(arctic, name="arctic", dims=("time"), coords=[f.time])
+
+    seaice_index = xr.merge([antarctic,arctic])
+    seaice_index.encoding["unlimited_dims"] = "time"
+
+    outdir = f"{config['run']['folder']}/{config['run']['name']}/atm/climateind/monavg"
+    if not(os.path.exists(outdir)):
+        os.system(f"mkdir -p {outdir}")
+
+    seaice_index.to_netcdf(f"{outdir}/seaice_index.nc")
