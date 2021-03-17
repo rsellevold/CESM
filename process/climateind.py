@@ -17,6 +17,12 @@ def main():
     tasks = sys.argv[1]
     tasks = tasks.split(",")
 
+    try:
+        seasons = sys.argv[2]
+        seasons = seasons.split(",")
+    except IndexError:
+        pass
+
     tasks = lib.mpimods.check_varlist(tasks, size)
 
     for i in range(int(len(tasks)/size)):
@@ -35,6 +41,8 @@ def main():
             lib.climateind.GBI(config)
         if var=="seaice_index":
             lib.climateind.seaice_index(config)
+        if var=="NAO":
+            lib.climateind.NAO(config, seasons)
         else:
             None
 

@@ -115,9 +115,9 @@ def mergehist(config, comp, var, hfile, htype):
             else:
                 varsget = f"{var}"
             if i==0:
-                os.system(f"ncrcat -v {varsget} {fstring} {outfolder[:-12]}/temp/{var}.nc")
+                os.system(f"ncrcat -v {varsget} {fstring} {outfolder[:-12]}/temp/{var}.nc > nco_output.txt 2>&1")
             else:
-                os.system(f"ncrcat -O -v {var} {fstring} {outfolder[:-12]}/temp/{var}.nc {outfolder[:-12]}/temp/{var}.nc")
+                os.system(f"ncrcat -O -v {var} {fstring} {outfolder[:-12]}/temp/{var}.nc {outfolder[:-12]}/temp/{var}.nc > nco_output.txt 2>&1")
 
         if comp=="glc":
             f = xr.open_dataset(f"{outfolder[:-12]}/temp/{var}.nc", decode_times=False)

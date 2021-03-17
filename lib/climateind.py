@@ -1,9 +1,55 @@
 import os,sys
 import numpy as np
+import xarray as xr
 from cdo import Cdo
+from eofs.standard import Eof
 
 from .misc import *
 from .ncl import *
+
+def NAO(config, season):
+
+    for seas in season:
+        fname = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/{seas}/PSL.nc"
+
+        f = xr.open_dataset(fname)
+
+        f = lonFlip(f, ["PSL"])
+        f = sellatlon(f, lats=(20,80), lons=(-90,40))
+
+        coslat = np.cos(np.deg2rad(f.lat.values)).clip(0.,1.)
+        wgts = np.sqrt(coslat)[...,np.newaxis]
+        solver = Eof(f.PSL.values, weights=wgts)
+        psl_filtered = np.copy(f.PSL.values).astype(np.float64)
+        for y in range(psl_filtered.shape[1]):
+            for x in range(psl_filtered.shape[2]):
+                psl_filtered[:,y,x] = lanczos_filter(psl_filtered[:,y,x], 21, 1, 1./100., -999, 1, 1, 1e+36)
+        solver_filt = Eof(psl_filtered, weights=wgts)
+
+        eofs = solver.eofsAsCovariance(neofs=5)
+        pcs = solver.pcs(npcs=5)
+        vari = solver.varianceFraction(neigs=5)
+
+        eofs_filt = solver_filt.eofsAsCovariance(neofs=5)
+        pcs_filt = solver_filt.pcs(npcs=5)
+        vari_filt = solver_filt.varianceFraction(neigs=5)
+
+        eofs = xr.DataArray(eofs, name="eofs", dims=("neof","lat","lon"), coords=[np.arange(1,6,1), f.lat, f.lon])
+        pcs = xr.DataArray(pcs, name="pcs", dims=("time","neof"), coords=[f.time,np.arange(1,6,1)], attrs={"variance": vari})
+        
+        eofs_filt = xr.DataArray(eofs_filt, name="eofs_filtered", dims=("neof","lat","lon"), coords=[np.arange(1,6,1), f.lat, f.lon])
+        pcs_filt = xr.DataArray(pcs_filt, name="pcs_filtered", dims=("time","neof"), coords=[f.time,np.arange(1,6,1)], attrs={"variance": vari_filt})
+
+        fout = xr.merge([eofs,pcs,eofs_filt,pcs_filt])
+        fout.encoding["unlimited_dims"] = "time"
+
+        outdir = f"{config['run']['folder']}/{config['run']['name']}/atm/climateind/{seas}"
+        if not(os.path.exists(outdir)):
+            os.system(f"mkdir -p {outdir}")
+
+        fout.to_netcdf(f"{outdir}/NAO.nc")
+        fout.close()
+        f.close()
 
 def northatlantic_jet(config):
 
@@ -87,22 +133,22 @@ def GBI(config):
         multilevel=False
 
     if multilevel:
-        data = f.sel(lev=[500])["Z3"].values
+        data = np.squeeze(f.sel(lev=[500])["Z3"].values)
     else:
         data = f["Z3"].values
 
     cdo = Cdo()
     area = cdo.gridarea(input=f, returnXDataset=True)
     gridarea = np.copy(area.cell_area.values)
-    area.close()
 
+    gridarea = np.broadcast_to(gridarea, data.shape).copy()
     gridarea[np.isnan(data)] = np.nan
 
     lat1, lat2 = findnearest((60,80), f.lat.values)
     lon1, lon2 = findnearest((280,340), f.lon.values)
 
-    GBI1 = np.nansum(data[:,lat1:lat2,lon1:lon2]*gridarea[np.newaxis,lat1:lat2,lon1:lon2], axis=(1,2))/np.nansum(gridarea[lat1:lat2,lon1:lon2])
-    GBI2 = GBI1 - (np.nansum(data[:,lat1:lat2,:]*gridarea[np.newaxis,lat1:lat2,:], axis=(1,2))/np.nansum(gridarea[lat1:lat2,:]))
+    GBI1 = np.nansum(data[:,lat1:lat2,lon1:lon2]*gridarea[:,lat1:lat2,lon1:lon2], axis=(1,2))/np.nansum(gridarea[:,lat1:lat2,lon1:lon2], axis=(1,2))
+    GBI2 = GBI1 - (np.nansum(data[:,lat1:lat2,:]*gridarea[:,lat1:lat2,:], axis=(1,2))/np.nansum(gridarea[:,lat1:lat2,:], axis=(1,2)))
 
     GBI1 = xr.DataArray(GBI1, name="GBI1", dims=("time"), coords=[f.time])
     GBI2 = xr.DataArray(GBI2, name="GBI2", dims=("time"), coords=[f.time])
@@ -115,6 +161,7 @@ def GBI(config):
         os.system(f"mkdir -p {outdir}")
 
     GBI.to_netcdf(f"{outdir}/GBI.nc")
+    area.close()
 
 
 def seaice_index(config):

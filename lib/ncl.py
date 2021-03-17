@@ -49,7 +49,7 @@ def lanczos_filter(data, nwt, ihp, fca, fcb, nsigma, kopt, fillval):
     wgt, resp, freq = dfiltrq(nwt, ihp, fca, fcb, nsigma)
 
     lwork = int(len(data_new) + 2*(len(wgt)/2))
-    
+
     ier = dwgtrunave(data_new, wgt, kopt, fillval, lwork)
     if ier != 0:
         sys.exit("ncl:lanczos filter: error")

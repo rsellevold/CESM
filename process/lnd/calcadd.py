@@ -200,7 +200,9 @@ def main():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    fdir = f"{config['run']['folder']}/{config['run']['name']}/lnd/hist/monavg"
+    time = sys.argv[1]
+
+    fdir = f"{config['run']['folder']}/{config['run']['name']}/lnd/hist/{time}"
     varlist = ["ALBEDO_ICE", "ALBEDO", "MELT_ICE", "MELT", "PRECIP_ICE", "PRECIP", "SMB_ICE", "SMB", "RUNOFF_ICE", "FSA_ICE", "FIRA_ICE", "MELTHEAT_ICE", "GHF_ICE"]
     varlist = lib.mpimods.check_varlist(varlist, size)
 
