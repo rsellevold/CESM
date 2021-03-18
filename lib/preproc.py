@@ -46,6 +46,16 @@ def _removeSameTime(fnames_all, comp, bndname, endtime):
     return fnames_all
 
 
+def _removeOCNnday(fnames_all):
+    fnames_all_new = fnames_all.copy()
+    for fname in fnames_all:
+        if "nday1" in fname:
+            fnames_all_new.remove(fname)
+        elif "once" in fname:
+            fnames_all_new.remove(fname)
+    return fnames_all_new
+
+
 
 def monavg(fdir, var):
     # Computes monthly means
@@ -84,8 +94,8 @@ def mergehist(config, comp, var, hfile, htype):
     os.system(f"mkdir -p {outfolder[:-12]}/temp")
 
     fnames_all.sort()
-    if comp=="ocn" and not(config["history"]["ts"]):
-        fnames_all = fnames_all[:-1]
+    if comp=="ocn" and not(config["history"]["ts"]) and hfile=="h":
+        fnames_all = _removeOCNnday(fnames_all)
 
     # Open earlier file (if it exists), to remove files with same timestamp
     try:
@@ -118,13 +128,12 @@ def mergehist(config, comp, var, hfile, htype):
                 os.system(f"ncrcat -v {varsget} {fstring} {outfolder[:-12]}/temp/{var}.nc > nco_output.txt 2>&1")
             else:
                 os.system(f"ncrcat -O -v {var} {fstring} {outfolder[:-12]}/temp/{var}.nc {outfolder[:-12]}/temp/{var}.nc > nco_output.txt 2>&1")
-
+        
         if comp=="glc":
             f = xr.open_dataset(f"{outfolder[:-12]}/temp/{var}.nc", decode_times=False)
         else:
             f = xr.open_dataset(f"{outfolder[:-12]}/temp/{var}.nc")
             timeunit = Dataset(f"{outfolder[:-12]}/temp/{var}.nc","r").variables["time"].units
-        f = f.sortby("time")
 
         if comp!="glc":
             try:
@@ -143,9 +152,12 @@ def mergehist(config, comp, var, hfile, htype):
 
         if comp=="ocn" and var=="MOC":
             data = f[var][:,1,0,:,:]
+        elif comp=="ocn" and var!="MOC":
+            data = f[var][:,config["compset"]["ocn"]["nlev"],:,:]
         else:
             data = f[var]
-
+        data = data.sortby("time")
+        
         if htype=="dayavg":
             data = data[1:]
 
@@ -166,6 +178,9 @@ def mergehist(config, comp, var, hfile, htype):
 
         data = data.to_dataset()
 
+        if comp=="ocn" and var!="MOC":
+            data = cdo.remapbil(config["compset"]["ocn"]["remap"], input=data, returnXDataset=True)
+        
         if prevDataExists:
             data = xr.concat([data_already, data], dim="time")
             data = data.sortby("time")
