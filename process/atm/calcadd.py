@@ -140,6 +140,20 @@ def calcadd(fdir, var):
         except:
             None
 
+    elif var=="SST2":
+        try:
+            TS = xr.open_dataset(f"{fdir}/TS.nc")
+            OCNFRAC = xr.open_dataset(f"{fdir}/OCNFRAC.nc")
+            SST2 = TS["TS"] * OCNFRAC["OCNFRAC"].where(OCNFRAC["OCNFRAC"]>0.5)
+            SST2.name = "SST2"
+            SST2.to_dataset()
+            SST2.encoding["unlimited_dims"] = "time"
+            SST2.to_netcdf(f"{fdir}/SST2.nc")
+            SST2.close()
+        except:
+            None
+
+
 
 def main():
     # Initialize MPI
@@ -150,7 +164,7 @@ def main():
     time = sys.argv[1]
 
     fdir = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/{time}"
-    varlist = ["ALBEDO", "PRECT", "SNOW", "RAIN", "RADTOA", "FSCF", "FLCF", "FSDTOA", "SWtra", "LWtra"]
+    varlist = ["ALBEDO", "PRECT", "SNOW", "RAIN", "RADTOA", "FSCF", "FLCF", "FSDTOA", "SWtra", "LWtra", "SST2"]
     varlist = lib.mpimods.check_varlist(varlist, size)
 
     for i in range(int(len(varlist)/size)):
