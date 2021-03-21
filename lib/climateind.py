@@ -87,11 +87,19 @@ def northatlantic_jet(config):
 
 
 def amo(config):
-    fname = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/annavg/SST.nc"
-    f = xr.open_dataset(fname)
-    f = lonFlip(f, ["SST"])
+    
+    try:
+        fname = f"{config['run']['folder']}/{config['run']['name']}/ocn/hist/annavg/TEMP.nc"
+        f = xr.open_dataset(fname)
+        vname = "TEMP"
+    except:
+        fname = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/annavg/SST.nc"
+        f = xr.open_dataset(fname)
+        vname = "SST"
+   
+    f = lonFlip(f, [vname])
 
-    SST = np.copy(f["SST"].values)
+    SST = np.copy(f[vname].values)
     SST[SST==0] = np.nan
 
     cdo = Cdo()
