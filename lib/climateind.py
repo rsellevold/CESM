@@ -87,16 +87,17 @@ def northatlantic_jet(config):
 
 
 def amo(config):
-    
-    try:
-        fname = f"{config['run']['folder']}/{config['run']['name']}/ocn/hist/annavg/TEMP.nc"
+    fname1 = f"{config['run']['folder']}/{config['run']['name']}/ocn/hist/annavg/TEMP.nc"
+    fname2 = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/annavg/SST.nc"
+    if os.path.exists(fname1):
         f = xr.open_dataset(fname)
         vname = "TEMP"
-    except:
-        fname = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/annavg/SST.nc"
+    elif os.path.exists(fname2):
         f = xr.open_dataset(fname)
         vname = "SST"
-   
+    else:
+        sys.exit("Cannot find file to calculate AMO")
+    
     f = lonFlip(f, [vname])
 
     SST = np.copy(f[vname].values)
