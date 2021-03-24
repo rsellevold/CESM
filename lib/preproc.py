@@ -159,7 +159,7 @@ def mergehist(config, comp, var, hfile, htype):
         data = data.sortby("time")
         
         if htype=="dayavg":
-            if data.time.dt.year[0] != data.time.dt.year[1])
+            if data.time.dt.year[0] != data.time.dt.year[1]:
                 data = data[1:]
 
         if comp=="atm" and data.ndim==4:

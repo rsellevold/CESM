@@ -90,10 +90,10 @@ def amo(config):
     fname1 = f"{config['run']['folder']}/{config['run']['name']}/ocn/hist/annavg/TEMP.nc"
     fname2 = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/annavg/SST.nc"
     if os.path.exists(fname1):
-        f = xr.open_dataset(fname)
+        f = xr.open_dataset(fname1)
         vname = "TEMP"
     elif os.path.exists(fname2):
-        f = xr.open_dataset(fname)
+        f = xr.open_dataset(fname2)
         vname = "SST"
     else:
         sys.exit("Cannot find file to calculate AMO")
