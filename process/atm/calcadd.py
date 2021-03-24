@@ -114,6 +114,46 @@ def calcadd(fdir, var):
         except:
             None
 
+    elif var=="SWtra":
+        try:
+            FSDS = xr.open_dataset(f"{fdir}/FSDS.nc")
+            FSDSC = xr.open_dataset(f"{fdir}/FSDSC.nc")
+            SWtra = FSDS["FSDS"] / FSDSC["FSDSC"]
+            SWtra.name = "SWtra"
+            SWtra.to_dataset()
+            SWtra.encoding["unlimited_dims"] = "time"
+            SWtra.to_netcdf(f"{fdir}/SWtra.nc")
+            SWtra.close()
+        except:
+            None
+
+    elif var=="LWtra":
+        try:
+            FLDS = xr.open_dataset(f"{fdir}/FLDS.nc")
+            FLDSC = xr.open_dataset(f"{fdir}/FLDSC.nc")
+            LWtra = FLDSC["FLDSC"] / FLDS["FLDS"]
+            LWtra.name = "LWtra"
+            LWtra.to_dataset()
+            LWtra.encoding["unlimited_dims"] = "time"
+            LWtra.to_netcdf(f"{fdir}/LWtra.nc")
+            LWtra.close()
+        except:
+            None
+
+    elif var=="SST2":
+        try:
+            TS = xr.open_dataset(f"{fdir}/TS.nc")
+            OCNFRAC = xr.open_dataset(f"{fdir}/OCNFRAC.nc")
+            SST2 = TS["TS"] * OCNFRAC["OCNFRAC"].where(OCNFRAC["OCNFRAC"]>0.5)
+            SST2.name = "SST2"
+            SST2.to_dataset()
+            SST2.encoding["unlimited_dims"] = "time"
+            SST2.to_netcdf(f"{fdir}/SST2.nc")
+            SST2.close()
+        except:
+            None
+
+
 
 def main():
     # Initialize MPI
@@ -121,8 +161,10 @@ def main():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    fdir = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/monavg"
-    varlist = ["ALBEDO", "PRECT", "SNOW", "RAIN", "RADTOA", "FSCF", "FLCF", "FSDTOA"]
+    time = sys.argv[1]
+
+    fdir = f"{config['run']['folder']}/{config['run']['name']}/atm/hist/{time}"
+    varlist = ["ALBEDO", "PRECT", "SNOW", "RAIN", "RADTOA", "FSCF", "FLCF", "FSDTOA", "SWtra", "LWtra", "SST2"]
     varlist = lib.mpimods.check_varlist(varlist, size)
 
     for i in range(int(len(varlist)/size)):

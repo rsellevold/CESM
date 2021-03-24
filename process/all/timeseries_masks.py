@@ -19,7 +19,7 @@ def make_varlist(comps,times,maskList):
     varlist = []
     for c in comps:
         for t in times:
-            f = f"{fdir}/{comp}/hist/{t}"
+            f = f"{fdir}/{c}/hist/{t}"
             vlist = os.popen(f"ls {f}").read().split("\n")[:-1]
             for v in vlist:
                 for m in maskList:
@@ -53,6 +53,10 @@ def main():
         data = comm.scatter(data, root=0)
         var = varlist[data]
         print(var)
-        if var is not None: lib.proc.ts_masks(var[0], var[1], var[2], masks[var[3]])
+        if var is not None: 
+            try:
+                lib.proc.ts_masks(var[0], var[1], var[2], masks[var[3]])
+            except:
+                pass
 
 main()

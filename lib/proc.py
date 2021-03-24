@@ -78,6 +78,7 @@ def trend(fdir, var, seas, nyears):
 
 def areastat(data, weights, arith):
   equal = False
+  skip = False
   if data.ndim==3 and weights.ndim==2:
     weights[np.isnan(data[1,:,:])] = np.nan
     weights = weights[np.newaxis,...]
@@ -88,7 +89,7 @@ def areastat(data, weights, arith):
     equal = True
     weights[np.isnan(data)] = np.nan
   else:
-    sys.exit(f"Statistics not supported for data with {data.ndim} dimensions")
+    print(f"Statistics not supported for data with {data.ndim} dimensions")
 
   if arith=="mean" and not(equal):
     data = np.nansum(data * weights, axis=(-2,-1)) / np.nansum(weights)
@@ -123,6 +124,8 @@ def ts(fdir, var, seas, region):
     data = areastat(f[key].sel(lat=slice(-90,0)).values, farea.sel(lat=slice(-90,0)).cell_area.values, arith=arith)
   elif region=="tropical":
     data = areastat(f[key].sel(lat=slice(-30,30)).values, farea.sel(lat=slice(-30,30)).cell_area.values, arith=arith)
+  elif region=="arctic":
+    data = areastat(f[key].sel(lat=slice(60,90)).values, farea.sel(lat=slice(60,90)).cell_area.values, arith=arith)
   else:
     sys.exit("Undefined region")
 

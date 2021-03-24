@@ -15,11 +15,17 @@ def main():
     size = comm.Get_size()
 
     tasks = sys.argv[1]
-    comp = comp.split(",")
+    tasks = tasks.split(",")
+
+    try:
+        seasons = sys.argv[2]
+        seasons = seasons.split(",")
+    except IndexError:
+        pass
 
     tasks = lib.mpimods.check_varlist(tasks, size)
 
-    for i in range(int(len(varlist)/size)):
+    for i in range(int(len(tasks)/size)):
         if rank==0:
             data = [(i*size)+k for k in range(size)]
         else:
@@ -27,8 +33,16 @@ def main():
         data = comm.scatter(data, root=0)
         var = tasks[data]
 
-        if var=="najet":
-            lib.atmosphere.northatlantic_jet(config)
+        if var=="na_jet":
+            lib.climateind.northatlantic_jet(config)
+        if var=="amo":
+            lib.climateind.amo(config)
+        if var=="GBI":
+            lib.climateind.GBI(config)
+        if var=="seaice_index":
+            lib.climateind.seaice_index(config)
+        if var=="NAO":
+            lib.climateind.NAO(config, seasons)
         else:
             None
 
