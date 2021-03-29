@@ -1,4 +1,4 @@
-SUBROUTINE cism2clm(x,clat,ncy,clon,ncx,ilat,niy,ilon,nix)
+SUBROUTINE cism2clm(x,clat,ncy,clon,ncx,ilat,niy,ilon,nix,dataout)
   implicit none
 
   integer :: cx, cy, ix, iy

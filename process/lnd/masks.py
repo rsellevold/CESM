@@ -18,7 +18,7 @@ def masks(fdir, var):
         GrIS = GrIS.fillna(0.)
         GrIS = GrIS.to_dataset()
         GrIS.encoding["unlimited_dims"] = "time"
-        checkfile = f"{fdir[:-12]}/masks.nc"
+        checkfile = f"{fdir[:-12]}/masks_annavg.nc"
             #if os.path.exists(checkfile):
             #    GrIS.to_netcdf(checkfile, mode="a")
             #else:
@@ -36,7 +36,7 @@ def masks(fdir, var):
             GrIS = GrIS.fillna(0.)
             GrIS = GrIS.to_dataset()
             GrIS.encoding["unlimited_dims"] = "time"
-            checkfile = f"{fdir[:-12]}/masks.nc"
+            checkfile = f"{fdir[:-12]}/masks_annavg.nc"
             if os.path.exists(checkfile):
                 GrIS.to_netcdf(checkfile, mode="a")
             else:
@@ -53,7 +53,7 @@ def main():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    fdir = f"{config['run']['folder']}/{config['run']['name']}/lnd/hist/monavg"
+    fdir = f"{config['run']['folder']}/{config['run']['name']}/lnd/hist/annavg"
     varlist = ["GrIS", "GrIS_pct"]
     varlist = lib.mpimods.check_varlist(varlist, size)
 
