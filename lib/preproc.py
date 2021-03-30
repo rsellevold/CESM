@@ -175,6 +175,7 @@ def mergehist(config, comp, var, hfile, htype):
                 PS = fPS.PS.sel(time=slice(tmin,tmax))
             for t in range(nt):
                 data_new[t,:,:,:] = Ngl.vinth2p(data.values[t,:,:,:], f.hyam.values, f.hybm.values, plev, PS.values[t,:,:], 1, 1000., 1, False)
+                data_new[data_new==1e+30] = np.nan
             data = xr.DataArray(data_new, name=var, dims=("time","lev","lat","lon"), coords=[data.time, plev, data.lat, data.lon])
 
         data = data.to_dataset()
