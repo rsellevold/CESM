@@ -179,6 +179,7 @@ def seaice_index(config):
 
     data = f["ICEFRAC"].values
     data[data<0.15] = np.nan
+    data[data>=0.15] = np.nan
 
     cdo = Cdo()
     area = cdo.gridarea(input=f, returnXDataset=True)
