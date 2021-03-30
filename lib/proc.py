@@ -78,16 +78,18 @@ def trend(fdir, var, seas, nyears):
 
 def areastat(data, weights, arith):
   if (data.ndim!=weights.ndim and data.ndim>weights.ndim):
-    weights = np.broadcast(weights, data.shape)
+    weights_use = np.copy(np.broadcast_to(weights, data.shape))
   elif weights.ndim>data.ndim:
     sys.exit("Weights cannot have more dimensions than data")
   
-  weights[np.isnan(data)] = np.nan
+  weights_use[np.isnan(data)] = np.nan
   
-  if arith=="mean" and equal:
-    data = np.nansum(data * weights, axis=(-2,-1)) / np.nansum(weights, axis=(-2,-1))
+  if arith=="mean":
+    data = np.nansum(data * weights_use, axis=(-2,-1)) / np.nansum(weights_use, axis=(-2,-1))
   elif arith=="sum":
-    data = np.nansum(data * weights, axis=(-2,-1))
+    data = np.nansum(data * weights_use, axis=(-2,-1))
+
+  del(weights_use)
 
   return data
 
@@ -118,7 +120,7 @@ def ts(fdir, var, seas, region):
   elif region=="arctic":
     data = areastat(f[key].sel(lat=slice(60,90)).values, farea.sel(lat=slice(60,90)).cell_area.values, arith=arith)
   elif region=="Greenland":
-    data = areastat(f[key].sel(lat=slice(60,80), lon=slice(280,340)).values, farea.sel(lat=slice(60,90), lon=slice(280,340)).cell_area.values, arith=arith)
+    data = areastat(f[key].sel(lat=slice(60,80), lon=slice(280,340)).values, farea.sel(lat=slice(60,80), lon=slice(280,340)).cell_area.values, arith=arith)
   else:
     sys.exit("Undefined region")
 
