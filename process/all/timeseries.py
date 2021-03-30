@@ -39,9 +39,9 @@ def main():
         var = varlist[data]
         print(var)
         if var is not None: 
-            try:
-                lib.proc.ts(var[0], var[2], var[1], var[3])
-            except:
-                print("Error, continuing")
+            #try:
+            lib.proc.ts(var[0], var[2], var[1], var[3])
+            #except:
+            #    print("Error, continuing")
 
 main()
