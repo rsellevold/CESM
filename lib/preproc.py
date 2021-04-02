@@ -61,14 +61,14 @@ def monavg(fdir, var):
     # Computes monthly means
     outdir = f"{fdir[:-7]}/monavg"
     _checkdir(outdir)
-    cdo.monmean(input=f"{fdir}/{var}", output=f"{outdir}/{var}")
+    cdo.monavg(input=f"{fdir}/{var}", output=f"{outdir}/{var}")
 
 
 def annavg(fdir, var):
     # Computes the annual means
     outdir = f"{fdir[:-7]}/annavg"
     _checkdir(outdir)
-    cdo.yearmean(input=f"{fdir}/{var}", output=f"{outdir}/{var}")
+    cdo.yearavg(input=f"{fdir}/{var}", output=f"{outdir}/{var}")
 
 
 def seasavg(fdir, var):
@@ -76,7 +76,7 @@ def seasavg(fdir, var):
     _checkdir(tmpdir)
     infile = f"{fdir}/{var}"
     tmpfile = f"{tmpdir}/{var}.seasavg.nc"
-    cdo.seasmean(input=infile, output=tmpfile)
+    cdo.seasavg(input=infile, output=tmpfile)
     cdo.splitseas(input=tmpfile, output=f"{tmpdir}/{var}.seasavg.")
     for seas in ["DJF","MAM","JJA","SON"]:
         outdir = f"{fdir[:-7]}/{seas}avg"
@@ -157,6 +157,9 @@ def mergehist(config, comp, var, hfile, htype):
         else:
             data = f[var]
         data = data.sortby("time")
+
+        _, index = np.unique(data["time"], return_index=True)
+        data = data.isel(time=index)
         
         if htype=="dayavg":
             if data.time.dt.year[0] != data.time.dt.year[1]:
@@ -174,8 +177,10 @@ def mergehist(config, comp, var, hfile, htype):
                 tmax = data.time.max()
                 PS = fPS.PS.sel(time=slice(tmin,tmax))
             for t in range(nt):
+                if var=="T":
+                    print(t)
                 data_new[t,:,:,:] = Ngl.vinth2p(data.values[t,:,:,:], f.hyam.values, f.hybm.values, plev, PS.values[t,:,:], 1, 1000., 1, False)
-                data_new[data_new==1e+30] = np.nan
+            data_new[data_new==1e+30] = np.nan
             data = xr.DataArray(data_new, name=var, dims=("time","lev","lat","lon"), coords=[data.time, plev, data.lat, data.lon])
 
         data = data.to_dataset()
