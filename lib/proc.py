@@ -79,6 +79,8 @@ def trend(fdir, var, seas, nyears):
 def areastat(data, weights, arith):
   if (data.ndim!=weights.ndim and data.ndim>weights.ndim):
     weights_use = np.copy(np.broadcast_to(weights, data.shape))
+  elif data.ndim==weights.ndim:
+    weights_use = np.copy(weights)
   elif weights.ndim>data.ndim:
     sys.exit("Weights cannot have more dimensions than data")
   
