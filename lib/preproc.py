@@ -3,7 +3,7 @@ import sys,os,glob,math
 import xarray as xr
 import cftime
 from cdo import Cdo
-import Ngl
+#import Ngl
 import numpy as np
 from netCDF4 import Dataset
 
