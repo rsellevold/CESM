@@ -1,5 +1,6 @@
 name: CESMpy
 channels:
+  - 'https://repo.continuum.io/pkgs/free'
   - conda-forge
   - defaults
 dependencies:
@@ -179,4 +180,4 @@ dependencies:
   - zict=2.0.0=py_0
   - zlib=1.2.11=h7b6447c_3
   - zstd=1.4.5=h6597ccf_2
-prefix: /glade/work/raymonds/mc3/envs/CESMpy
+prefix: /Users/raymond/miniconda3/envs/CESMpy
