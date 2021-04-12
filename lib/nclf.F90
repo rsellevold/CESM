@@ -202,8 +202,8 @@ SUBROUTINE dwrunavx77(x,npts,wgt,nwgt,kopt,xmsg,work,lw,ier)
 END SUBROUTINE dwrunavx77
 
 
-SUBROUTINE vinth2p(dati, dato, hbcofa, hbcofb, p0, plevi, plevo, &
-                   intyp, ilev, psfc, spvl, kxtrp, imax, nlat, &
-                   nlevi, nlevip1, nlevo)
-  use omp_lib
-  implicit none
+!SUBROUTINE vinth2p(dati, dato, hbcofa, hbcofb, p0, plevi, plevo, &
+!                   intyp, ilev, psfc, spvl, kxtrp, imax, nlat, &
+!                   nlevi, nlevip1, nlevo)
+!  use omp_lib
+!  implicit none
