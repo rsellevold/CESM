@@ -4,7 +4,7 @@ import numpy as np
 import xarray as xr
 
 from .sysfunc import _checkdir
-
+from .ncl import vinth2p_ecmwf
 
 
 def _getfnames(config, comp, var, hfile):
@@ -106,16 +106,22 @@ def mergehist(config, comp, var, hfile, htype):
             data = f[var]
         data = data.sortby("time")
 
+
+        if htype=="dayavg":
+            keep_time = []
+            for r in range(len(data["time"].values)):
+                if data["time"].values[r].hour!=12:
+                    keep_time.append(False)
+                else:
+                    keep_time.append(True)
+            data = data.isel(time=keep_time)
+            del(keep_time)
+
         _, index = np.unique(data["time"], return_index=True)
         data = data.isel(time=index)
         del(_, index)
-        
-        # TODO: figure out how to process this
-        if htype=="dayavg":
-            if data.time.dt.year[0] != data.time.dt.year[1]:
-                data = data[1:]
 
-        # TODO: copy vinth2p function to remove Ngl dependency
+
         if comp=="atm" and data.ndim==4:
             nt = len(data.time.values)
             plev = config["compset"]["atm"]["plev"]
@@ -127,19 +133,33 @@ def mergehist(config, comp, var, hfile, htype):
                 tmin = data.time.min()
                 tmax = data.time.max()
                 PS = fPS.PS.sel(time=slice(tmin,tmax))
+            try:
+                PHIS = f.PHIS
+            except AttributeError:
+                fPHIS = xr.open_dataset(f"{outfolder}/PHIS.nc")
+                tmin = data.time.min()
+                tmax = data.time.max()
+                PHIS = fPHIS.PHIS.sel(time=slice(tmin,tmax))
+            try:
+                TBOT = f.TBOT
+            except AttributeError:
+                try:
+                    fTBOT = xr.open_dataset(f"{outfolder}/TBOT.nc")
+                    tmin = data.time.min()
+                    tmax = data.time.max()
+                    TBOT = fTBOT.TBOT.sel(time=slice(tmin,tmax))
+                except FileNotFoundError:
+                    fTBOT = xr.open_dataset(f"{outfolder}/TREFHT.nc")
+                    tmin = data.time.min()
+                    tmax = data.time.max()
+                    TBOT = fTBOT.TREFHT.sel(time=slice(tmin,tmax))
             for t in range(nt):
-                if var=="T":
-                    print(t)
-                data_new[t,:,:,:] = Ngl.vinth2p(data.values[t,:,:,:], f.hyam.values, f.hybm.values, plev, PS.values[t,:,:], 1, 1000., 1, False)
-            data_new[data_new==1e+30] = np.nan
+                data_new[t,:,:,:] = vinth2p_ecmwf(data.values[t,:,:,:], f.hyam.values, f.hybm.values, 1000., plev, 1, PS.values[t,:,:], 1e+36, False, TBOT.values[t,:,:], PHIS.values[t,:,:])
+            data_new[data_new==1e+36] = np.nan
             data = xr.DataArray(data_new, name=var, dims=("time","lev","lat","lon"), coords=[data.time, plev, data.lat, data.lon])
 
         data = data.to_dataset()
 
-        # TODO: call cdo from outside python
-        if comp=="ocn" and var!="MOC":
-            data = cdo.remapbil(config["compset"]["ocn"]["remap"], input=data, returnXDataset=True)
-        
         if prevDataExists:
             data = xr.concat([f_already, data], dim="time")
             _, index = np.unique(data["time"], return_index=True)

@@ -202,15 +202,14 @@ SUBROUTINE dwrunavx77(x,npts,wgt,nwgt,kopt,xmsg,work,lw,ier)
 END SUBROUTINE dwrunavx77
 
 
-SUBROUTINE vinth2p_ecmwf(dati, dato, hbcofa, hbcofb, &
+SUBROUTINE ncl_vinth2p_ecmwf(dati, dato, hbcofa, hbcofb, &
                          p0, plevo, intyp, &
-                         ilev, psfc, spvl, kxtrp, &
+                         psfc, spvl, kxtrp, &
                          imax, nlat, nlevi, nlevip1, &
                          nlevo, nt, varflg, tbot, phis)
-  use omp_lib
   implicit none
 
-  integer, intent(in) :: intyp, ilev, kxtrp, imax, nlat
+  integer, intent(in) :: intyp, kxtrp, imax, nlat
   integer, intent(in) :: nlevi, nlevip1, nlevo, nt, varflg
 
   real*4, intent(in) :: dati(imax,nlat,nlevi,nt)
@@ -331,4 +330,4 @@ SUBROUTINE vinth2p_ecmwf(dati, dato, hbcofa, hbcofb, &
   end do
 
   return
-  END SUBROUTINE vinth2p_ecmwf
+  END SUBROUTINE ncl_vinth2p_ecmwf

@@ -1,8 +1,6 @@
 import os,sys
 import numpy as np
 import xarray as xr
-from cdo import Cdo
-from eofs.standard import Eof
 
 from .misc import *
 from .ncl import *
