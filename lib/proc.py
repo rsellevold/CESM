@@ -3,7 +3,7 @@ import xarray as xr
 from scipy.stats import linregress
 import numpy as np
 
-from .preproc import _checkdir
+from .sysfunc import _checkdir
 
 def trend_calc(data, tt):
   if data.ndim == 3:
