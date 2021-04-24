@@ -4,7 +4,7 @@ import numpy as np
 import xarray as xr
 
 from .sysfunc import _checkdir
-from .ncl import vinth2p_ecmwf
+from .ncl import vinth2p
 
 
 def _getfnames(config, comp, var, hfile):
@@ -70,6 +70,7 @@ def mergehist(config, comp, var, hfile, htype):
     if len(fnames_all)>0:
         for i in range(nfiles+1):
             fstring = " ".join(fnames_all[i*100:(i+1)*100])
+            if len(fstring)==0: continue
             if comp=="atm":
               varsget = f"{var},hyam,hybm"
             else:
@@ -133,29 +134,8 @@ def mergehist(config, comp, var, hfile, htype):
                 tmin = data.time.min()
                 tmax = data.time.max()
                 PS = fPS.PS.sel(time=slice(tmin,tmax))
-            try:
-                PHIS = f.PHIS
-            except AttributeError:
-                fPHIS = xr.open_dataset(f"{outfolder}/PHIS.nc")
-                tmin = data.time.min()
-                tmax = data.time.max()
-                PHIS = fPHIS.PHIS.sel(time=slice(tmin,tmax))
-            try:
-                TBOT = f.TBOT
-            except AttributeError:
-                try:
-                    fTBOT = xr.open_dataset(f"{outfolder}/TBOT.nc")
-                    tmin = data.time.min()
-                    tmax = data.time.max()
-                    TBOT = fTBOT.TBOT.sel(time=slice(tmin,tmax))
-                except FileNotFoundError:
-                    fTBOT = xr.open_dataset(f"{outfolder}/TREFHT.nc")
-                    tmin = data.time.min()
-                    tmax = data.time.max()
-                    TBOT = fTBOT.TREFHT.sel(time=slice(tmin,tmax))
             for t in range(nt):
-                data_new[t,:,:,:] = vinth2p_ecmwf(data.values[t,:,:,:], f.hyam.values, f.hybm.values, 1000., plev, 1, PS.values[t,:,:], 1e+36, False, TBOT.values[t,:,:], PHIS.values[t,:,:])
-            data_new[data_new==1e+36] = np.nan
+                data_new[t,:,:,:] = vinth2p_ecmwf(data.values[t,:,:,:], f.hyam.values, f.hybm.values, 1000., plev, PS.values[t,:,:], 1e+36)
             data = xr.DataArray(data_new, name=var, dims=("time","lev","lat","lon"), coords=[data.time, plev, data.lat, data.lon])
 
         data = data.to_dataset()

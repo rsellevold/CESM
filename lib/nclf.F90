@@ -202,38 +202,19 @@ SUBROUTINE dwrunavx77(x,npts,wgt,nwgt,kopt,xmsg,work,lw,ier)
 END SUBROUTINE dwrunavx77
 
 
-SUBROUTINE ncl_vinth2p_ecmwf(dati, dato, hbcofa, hbcofb, &
-                         p0, plevo, intyp, &
-                         psfc, spvl, kxtrp, &
-                         imax, nlat, nlevi, nlevip1, &
-                         nlevo, nt, varflg, tbot, phis)
+SUBROUTINE ncl_vinth2p(dati, dato, hbcofa, hbcofb, p0, plevo, psfc, spvl, kxtrp, imax, nlat, nlevi, nlevip1, nlevo, nt)
   implicit none
 
-  integer, intent(in) :: intyp, kxtrp, imax, nlat
-  integer, intent(in) :: nlevi, nlevip1, nlevo, nt, varflg
-
-  real*4, intent(in) :: dati(imax,nlat,nlevi,nt)
-  real*4, intent(in) :: hbcofa(nlevip1), hbcofb(nlevip1)
-  real*4, intent(in) :: p0, spvl
-  real*4, intent(in) :: plevo(nlevo)
-  real*4, intent(in) :: psfc(imax,nlat,nt), phis(imax,nlat,nt)
-  real*4, intent(in) :: tbot(imax,nlat,nt)
+  integer, intent(in) :: kxtrp, imax, nlat, nlevi, nlevip1, nlevo, nt
+  real*4, intent(in) :: dati(imax,nlat,nlevi,nt), hbcofa(nlevip1), hbcofb(nlevip1), p0, plevo(nlevo), psfc(imax,nlat,nt), spvl
   real*4, intent(out) :: dato(imax,nlat,nlevo,nt)
 
-  integer :: i, j, k, t, kp, kpi, iprint
-  real*4 :: tstar, hgt, alnp, t0, tplat, &
-            tprime0, alpha, alph, psfcmb, &
-            plevi(nlevip1)
-  real*4 :: rd, ginv
-
-  rd = 287.0
-  ginv = 1.0 / 9.80616
-  alpha = 0.0065 * rd * ginv
+  integer :: i, j, k, t, kp, kpi
+  real*4 :: plevi(nlevip1)
 
   do t=1,nt
     do 70 j=1,nlat
       do 60 i=1,imax
-
         if (psfc(i,j,t)==spvl) then
           do k=1,nlevo
             dato(i,j,k,t) = spvl
@@ -243,91 +224,43 @@ SUBROUTINE ncl_vinth2p_ecmwf(dati, dato, hbcofa, hbcofb, &
 
         do k=1,nlevi
           kpi = k
-          plevi(k) = (hbcofa(kpi)*p0) + hbcofb(kpi) * (psfc(i,j,t)*.01)
+          plevi(k) = (hbcofa(kpi)*p0) + hbcofb(kpi) * (psfc(i,j,t)*0.01)
         end do
 
         do 50 k=1,nlevo
-          
-          if (plevo(k)<plevi(1)) then
+          if (plevo(k)<=plevi(1)) then
             kp = 1
             go to 30
           else if (plevo(k)>plevi(nlevi)) then
             if (kxtrp==0) then
               dato(i,j,k,t) = spvl
               go to 40
-            else if (varflg>0) then
-              psfcmb = psfc(i,j,t)*0.01
-              tstar = dati(i,j,nlevi,t) * &
-                      (1.0+alpha* (psfcmb/plevi(nlevi)-1))
-              hgt = phis(i,j,t) * ginv
-              if (hgt<2000.0) then
-                alnp = alpha*log(plevo(k)/psfcmb)
-              else
-                t0 = tstar + 0.0065*hgt
-                tplat = min(t0, 298.0)
-                if (hgt < 2500.0) then
-                  tprime0 = 0.002*((2500.0-hgt)*t0+ (hgt-2000.0)*tplat)
-                else
-                  tprime0 = tplat
-                end if
-                if (tprime0<tstar) then
-                  alnp = 0.0
-                else
-                  alnp = rd* (tprime0-tstar)/phis(i,j,t)*log(plevo(k)/psfcmb)
-                end if
-                dato(i,j,k,t) = tstar* (1.0+alnp+0.5*alnp**2+1.0/6.0*alnp**3)
-                go to 40
-              end if
-            else if (varflg < 0) then
-              psfcmb = psfc(i,j,t)*0.01
-              hgt = phis(i,j,t) * ginv
-              tstar = tbot(i,j,t)* (1.0+alpha* (psfcmb/plevi(nlevi)-1.0))
-              t0 = tstar + 0.0065*hgt
-              if (tstar<290.5 .and. t0>290.5) then
-                alph = rd/phis(i,j,t)* (290.5-tstar)
-              else if (tstar>290.5 .and. t0>290.5) then
-                alph = 0
-                tstar = 0.5* (290.5+tstar)
-              else
-                alph = alpha
-              end if
-              if (tstar < 255.0) then
-                tstar = 0.5* (tstar+255.0)
-              end if
-              alnp = alph*log(plevo(k)/psfcmb)
-              dato(i,j,k,t) = hgt - rd*tstar*ginv*log(plevo(k)/psfcmb)*(1.0+.5*alnp+1.0/6.0*alnp**2)
-              go to 40
             else
-              dato(i,j,k,t) = dati(i,j,nlevi,t)
-              go to 40
+              kp = nlevi-1
+              go to 30
             end if
-          else if (plevo(k)>plevi(nlevi-1)) then
-            kp = nlevi - 1
+          else if (plevo(k)>=plevi(nlevi-1)) then
+            kp = nlevi-1
             go to 30
           else
             kp = 0
- 20         continue
+20          continue
             kp = kp+1
-            if (plevo(k)<plevi(kp+1)) go to 30
+            if (plevo(k)<=plevi(kp+1)) go to 30
             if (kp>nlevi) then
-              write(6, fmt=25) kp, nlevi
- 25           format(' KP.GT.KLEVI IN P2HBD. KP,KLEVI= ', 2I5)
+              write(6,fmt=25) kp,nlevi
+25            format (" kp.gt.klevi in p2hbd. kp,klevi =", 2I5)
             end if
             go to 20
           end if
- 30       continue
+30        continue
 
-          if (intyp==1) then
-            dato(i,j,k,t) = dati(i,j,kp,t) + (dati(i,j,kp+1,t)-dati(i,j,kp,t))*(plevo(k)-plevi(kp))/(plevi(kp+1)-plevi(kp))
-          else if (intyp==2) then
-            iprint = 1
-            dato(i,j,k,t) = dati(i,j,kp,t) + (dati(i,j,kp+1,t)-dati(i,j,kp,t))*log(plevo(k)/plevi(kp))/log(plevi(kp+1)/plevi(kp))
-          end if
- 40       continue
- 50     continue
- 60   continue
- 70 continue
+          dato(i,j,k,t) = dati(i,j,kp,t) + (dati(i,j,kp+1,t)-dati(i,j,kp,t))*(plevo(k)-plevi(kp))/(plevi(kp+1)-plevi(kp))
+
+40        continue
+50      continue
+60    continue
+70  continue
   end do
-
-  return
-  END SUBROUTINE ncl_vinth2p_ecmwf
+  RETURN
+  END SUBROUTINE ncl_vinth2p
