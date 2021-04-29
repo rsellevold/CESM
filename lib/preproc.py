@@ -3,7 +3,7 @@ import sys,os,glob,math
 import xarray as xr
 import cftime
 from cdo import Cdo
-#import Ngl
+import Ngl
 import numpy as np
 from netCDF4 import Dataset
 
@@ -118,17 +118,21 @@ def mergehist(config, comp, var, hfile, htype):
     nfiles = math.floor(len(fnames_all)/100)
 
     if len(fnames_all)>0:
+        proctmpfiles = []
         for i in range(nfiles+1):
             fstring = " ".join(fnames_all[i*100:(i+1)*100])
+            if len(fstring)==0:
+                continue
             if comp=="atm":
               varsget = f"{var},hyam,hybm"
             else:
                 varsget = f"{var}"
-            if i==0:
-                os.system(f"ncrcat -v {varsget} {fstring} {outfolder[:-12]}/temp/{var}.nc > nco_output.txt 2>&1")
-            else:
-                os.system(f"ncrcat -O -v {var} {fstring} {outfolder[:-12]}/temp/{var}.nc {outfolder[:-12]}/temp/{var}.nc > nco_output.txt 2>&1")
-        
+            os.system(f"ncrcat -v {varsget} {fstring} {outfolder[:-12]}/temp/{var}_{i}.nc >> nco_output.txt 2>&1")
+            proctmpfiles.append(f"{outfolder[:-12]}/temp/{var}_{i}.nc")
+        procfile = " ".join(proctmpfiles)
+        os.system(f"ncrcat -v {var} {procfile} {outfolder[:-12]}/temp/{var}.nc >> nco_output.txt 2>&1")
+        os.system(f"rm {procfile}")
+
         if comp=="glc":
             f = xr.open_dataset(f"{outfolder[:-12]}/temp/{var}.nc", decode_times=False)
         else:
@@ -158,12 +162,18 @@ def mergehist(config, comp, var, hfile, htype):
             data = f[var]
         data = data.sortby("time")
 
+        if htype=="dayavg":
+            keep_time = []
+            for r in range(len(data["time"].values)):
+                if data["time"].values[r].hour!=12:
+                    keep_time.append(False)
+                else:
+                    keep_time.append(True)
+            data = data.isel(time=keep_time)
+            del(keep_time)
+
         _, index = np.unique(data["time"], return_index=True)
         data = data.isel(time=index)
-        
-        if htype=="dayavg":
-            if data.time.dt.year[0] != data.time.dt.year[1]:
-                data = data[1:]
 
         if comp=="atm" and data.ndim==4:
             nt = len(data.time.values)
@@ -177,20 +187,18 @@ def mergehist(config, comp, var, hfile, htype):
                 tmax = data.time.max()
                 PS = fPS.PS.sel(time=slice(tmin,tmax))
             for t in range(nt):
-                if var=="T":
-                    print(t)
                 data_new[t,:,:,:] = Ngl.vinth2p(data.values[t,:,:,:], f.hyam.values, f.hybm.values, plev, PS.values[t,:,:], 1, 1000., 1, False)
+            data_new = data_new.astype(np.float32)
             data_new[data_new==1e+30] = np.nan
             data = xr.DataArray(data_new, name=var, dims=("time","lev","lat","lon"), coords=[data.time, plev, data.lat, data.lon])
 
         data = data.to_dataset()
 
-        if comp=="ocn" and var!="MOC":
-            data = cdo.remapbil(config["compset"]["ocn"]["remap"], input=data, returnXDataset=True)
-        
         if prevDataExists:
             data = xr.concat([data_already, data], dim="time")
             data = data.sortby("time")
+            _, index = np.unique(data["time"], return_index=True)
+            data = data.isel(time=index)
             data_already.close()
 
         data.encoding["unlimited_dims"] = "time"
