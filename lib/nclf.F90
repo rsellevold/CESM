@@ -202,8 +202,65 @@ SUBROUTINE dwrunavx77(x,npts,wgt,nwgt,kopt,xmsg,work,lw,ier)
 END SUBROUTINE dwrunavx77
 
 
-!SUBROUTINE vinth2p(dati, dato, hbcofa, hbcofb, p0, plevi, plevo, &
-!                   intyp, ilev, psfc, spvl, kxtrp, imax, nlat, &
-!                   nlevi, nlevip1, nlevo)
-!  use omp_lib
-!  implicit none
+SUBROUTINE ncl_vinth2p(dati, dato, hbcofa, hbcofb, p0, plevo, psfc, spvl, kxtrp, imax, nlat, nlevi, nlevip1, nlevo, nt)
+  implicit none
+
+  integer, intent(in) :: kxtrp, imax, nlat, nlevi, nlevip1, nlevo, nt
+  real*4, intent(in) :: dati(imax,nlat,nlevi,nt), hbcofa(nlevip1), hbcofb(nlevip1), p0, plevo(nlevo), psfc(imax,nlat,nt), spvl
+  real*4, intent(out) :: dato(imax,nlat,nlevo,nt)
+
+  integer :: i, j, k, t, kp, kpi
+  real*4 :: plevi(nlevip1)
+
+  do t=1,nt
+    do 70 j=1,nlat
+      do 60 i=1,imax
+        if (psfc(i,j,t)==spvl) then
+          do k=1,nlevo
+            dato(i,j,k,t) = spvl
+          end do
+          go to 60
+        end if
+
+        do k=1,nlevi
+          kpi = k
+          plevi(k) = (hbcofa(kpi)*p0) + hbcofb(kpi) * (psfc(i,j,t)*0.01)
+        end do
+
+        do 50 k=1,nlevo
+          if (plevo(k)<=plevi(1)) then
+            kp = 1
+            go to 30
+          else if (plevo(k)>plevi(nlevi)) then
+            if (kxtrp==0) then
+              dato(i,j,k,t) = spvl
+              go to 40
+            else
+              kp = nlevi-1
+              go to 30
+            end if
+          else if (plevo(k)>=plevi(nlevi-1)) then
+            kp = nlevi-1
+            go to 30
+          else
+            kp = 0
+20          continue
+            kp = kp+1
+            if (plevo(k)<=plevi(kp+1)) go to 30
+            if (kp>nlevi) then
+              write(6,fmt=25) kp,nlevi
+25            format (" kp.gt.klevi in p2hbd. kp,klevi =", 2I5)
+            end if
+            go to 20
+          end if
+30        continue
+
+          dato(i,j,k,t) = dati(i,j,kp,t) + (dati(i,j,kp+1,t)-dati(i,j,kp,t))*(plevo(k)-plevi(kp))/(plevi(kp+1)-plevi(kp))
+
+40        continue
+50      continue
+60    continue
+70  continue
+  end do
+  RETURN
+  END SUBROUTINE ncl_vinth2p

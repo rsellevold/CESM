@@ -56,3 +56,18 @@ def lanczos_filter(data, nwt, ihp, fca, fcb, nsigma, kopt, fillval):
     data_new[data_new==fillval] = np.nan
 
     return data_new
+
+
+# vinth2p_ecmwf
+def vinth2p(dati, hbcofa, hbcofb, p0, plevo, psfc, spvl):
+    dato = ncl_vinth2p(dati.swapaxes(0,3).swapaxes(1,2),
+                              hbcofa,
+                              hbcofb,
+                              p0,
+                              plevo,
+                              psfc.swapaxes(0,2),
+                              spvl,
+                              0)
+    dato = dato.swapaxes(0,3).swapaxes(1,2)
+    dato[dato==spvl] = np.nan
+    return dato

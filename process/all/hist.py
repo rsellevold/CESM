@@ -28,9 +28,9 @@ def main():
 
         print(var)
         if var is not None:
-            #try:
-            lib.preproc.mergehist(config, var[0], var[2], var[1], var[3])
-            #except:
-            #    print("Error: ", var)
+            try:
+                lib.preproc.mergehist(config, var[0], var[2], var[1], var[3])
+            except:
+                print("Error: ", var)
 
 main()

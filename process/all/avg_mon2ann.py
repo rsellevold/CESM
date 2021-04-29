@@ -31,6 +31,6 @@ def main():
         data = comm.scatter(data, root=0)
         var = varlist[data]
         print(var)
-        if var is not None: lib.preproc.annavg(var[0], var[1])
+        if var is not None: lib.averages.annavg(var[0], var[1])
 
 main()

@@ -2,12 +2,8 @@ import sys
 import xarray as xr
 from scipy.stats import linregress
 import numpy as np
-from cdo import Cdo
 
-from .preproc import _checkdir
-
-cdo = Cdo()
-
+from .sysfunc import _checkdir
 
 def trend_calc(data, tt):
   if data.ndim == 3:
