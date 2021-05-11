@@ -100,7 +100,7 @@ def ts(fdir, var, seas, region):
   keys = list(f.keys())
   if "time_bnds" in keys: keys.remove("time_bnds")
   key = keys[0]
-  farea = cdo.gridarea(input=f, returnXDataset=True)
+  farea = xr.open_dataset("input.nc")
 
   if key=="ICEFRAC":
     arith="sum"
@@ -140,6 +140,7 @@ def ts(fdir, var, seas, region):
   data.close()
   farea.close()
   f.close()
+  del(data, farea, f)
 
 
 def ts_masks(fdir, var, seas, mask):

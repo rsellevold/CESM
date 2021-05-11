@@ -1,10 +1,10 @@
+import multiprocessing as mpi
 import yaml
 with open("config.yml","r") as f:
     config = yaml.safe_load(f)
-import os,sys
+import os,sys,math
 sys.path.append(f"{config['machine']['codepath']}")
 
-from mpi4py import MPI
 import xarray as xr
 import lib
 
@@ -13,6 +13,7 @@ def masklist(masks):
     keylist = list(masks.keys())
     if "time_bnds" in keylist: keylist.remove("time_bnds")
     return keylist
+
 
 def make_varlist(comps,times,maskList):
     fdir = f"{config['run']['folder']}/{config['run']['name']}"
@@ -27,12 +28,15 @@ def make_varlist(comps,times,maskList):
     return varlist
 
 
-def main():
-    # Initialize MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
 
+def launch(chunk,masks):
+    for arg in chunk:
+        print(arg)
+        lib.proc.ts_masks(arg[0], arg[1], arg[2], masks[arg[3]])
+
+
+
+def main():
     comp = sys.argv[1]
     comp = comp.split(",")
     times = sys.argv[2]
@@ -43,20 +47,13 @@ def main():
     maskList = masklist(masks)
 
     varlist = make_varlist(comp,times,maskList)
-    varlist = lib.mpimods.check_varlist(varlist,size)
 
-    for i in range(int(len(varlist)/size)):
-        if rank==0:
-            data = [(i*size)+k for k in range(size)]
-        else:
-            data = None
-        data = comm.scatter(data, root=0)
-        var = varlist[data]
-        print(var)
-        if var is not None: 
-            try:
-                lib.proc.ts_masks(var[0], var[1], var[2], masks[var[3]])
-            except:
-                pass
+    niter = math.floor(len(varlist)/25) + 1
+    for i in range(niter):
+        chunk = varlist[i*25:i*25+25]
+        p = mpi.Process(target=launch, args=(chunk,masks,))
+        p.start()
 
-main()
+
+if __name__ == "__main__":
+    main()

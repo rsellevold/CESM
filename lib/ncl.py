@@ -60,6 +60,11 @@ def lanczos_filter(data, nwt, ihp, fca, fcb, nsigma, kopt, fillval):
 
 # vinth2p_ecmwf
 def vinth2p(dati, hbcofa, hbcofb, p0, plevo, psfc, spvl):
+    if dati.ndim==3:
+        shp = dati.shape
+        dati = np.copy(np.broadcast_to(dati, (1,shp[0],shp[1],shp[2])))
+        psfc = np.copy(np.broadcast_to(psfc, (1,shp[1],shp[2])))
+
     dato = ncl_vinth2p(dati.swapaxes(0,3).swapaxes(1,2),
                               hbcofa,
                               hbcofb,

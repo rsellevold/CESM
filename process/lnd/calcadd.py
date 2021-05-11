@@ -4,7 +4,6 @@ with open("config.yml","r") as f:
 import os,sys
 sys.path.append(f"{config['machine']['codepath']}")
 
-from mpi4py import MPI
 import xarray as xr
 import lib
 
@@ -195,24 +194,13 @@ def calcadd(fdir, var):
 
 
 def main():
-    # Initialize MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
-
     time = sys.argv[1]
 
     fdir = f"{config['run']['folder']}/{config['run']['name']}/lnd/hist/{time}"
     varlist = ["ALBEDO_ICE", "ALBEDO", "MELT_ICE", "MELT", "PRECIP_ICE", "PRECIP", "SMB_ICE", "SMB", "RUNOFF_ICE", "FSA_ICE", "FIRA_ICE", "MELTHEAT_ICE", "GHF_ICE"]
-    varlist = lib.mpimods.check_varlist(varlist, size)
 
-    for i in range(int(len(varlist)/size)):
-        if rank==0:
-            data = [(i*size)+k for k in range(size)]
-        else:
-            data = None
-        data = comm.scatter(data, root=0)
-        var = varlist[data]
+    for i in range(len(varlist)):
+        var = varlist[i]
         print(var)
         if var is not None: calcadd(fdir, var)
 

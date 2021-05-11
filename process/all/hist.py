@@ -1,36 +1,25 @@
+import multiprocessing as mpi
 import yaml
 with open("config.yml","r") as f:
     config = yaml.safe_load(f)
 import os,sys
 sys.path.append(f"{config['machine']['codepath']}")
 
-from mpi4py import MPI
 import lib
 
-def main():
-    # Initialize MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
 
+def main():
     comp = sys.argv[1]
     comp = comp.split(",")
     varlist = lib.mpimods.make_varlist(config,comp)
-    varlist = lib.mpimods.check_varlist(varlist,size)
 
-    for i in range(int(len(varlist)/size)):
-        if rank == 0:
-            data = [(i*size)+k for k in range(size)]
-        else:
-            data = None
-        data = comm.scatter(data, root=0)
-        var = varlist[data]
+    jobs = []
+    for i in range(len(varlist)):
+        arg = varlist[i]
+        print(arg)
+        p = mpi.Process(target=lib.history.mergehist, args=(config,arg[0],arg[2],arg[1],arg[3],))
+        jobs.append(p)
+        p.start()
 
-        print(var)
-        if var is not None:
-            try:
-                lib.preproc.mergehist(config, var[0], var[2], var[1], var[3])
-            except:
-                print("Error: ", var)
-
-main()
+if __name__ == "__main__":
+    main()

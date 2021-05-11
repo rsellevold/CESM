@@ -1,4 +1,4 @@
-import sys,os,glob
+import sys, os, glob, math
 import cftime
 import numpy as np
 import xarray as xr
@@ -68,6 +68,7 @@ def mergehist(config, comp, var, hfile, htype):
 
     nfiles = math.floor(len(fnames_all)/100)
     if len(fnames_all)>0:
+        proctmpfiles = []
         for i in range(nfiles+1):
             fstring = " ".join(fnames_all[i*100:(i+1)*100])
             if len(fstring)==0: continue
@@ -75,7 +76,7 @@ def mergehist(config, comp, var, hfile, htype):
               varsget = f"{var},hyam,hybm"
             else:
                 varsget = f"{var}"
-			os.system(f"ncrcat -v {varsget} {fstring} {outfolder[:-12]}/temp/{var}_{i}.nc >> nco_output.txt 2>&1")
+            os.system(f"ncrcat -v {varsget} {fstring} {outfolder[:-12]}/temp/{var}_{i}.nc >> nco_output.txt 2>&1")
             proctmpfiles.append(f"{outfolder[:-12]}/temp/{var}_{i}.nc")
         procfile = " ".join(proctmpfiles)
         os.system(f"ncrcat -v {var} {procfile} {outfolder[:-12]}/temp/{var}.nc >> nco_output.txt 2>&1")
@@ -152,8 +153,11 @@ def mergehist(config, comp, var, hfile, htype):
 
         data.close()
         f.close()
-        f_already.close()
-        del(data, f_already, f)
+        del(data, f)
+        if prevDataExists:
+            f_already.close()
+            del(f_already)
+
         os.system(f"rm {outfolder[:-12]}/temp/{var}.nc")
     elif len(fnames_all)==0 and prevDataExists:
         f_already.close()
