@@ -44,6 +44,7 @@ def _removeOCNnday(fnames_all):
 
 
 def mergehist(config, comp, var, hfile, htype):
+    print(comp, var, hfile, htype)
     outfolder = f"{config['run']['folder']}/{config['run']['name']}/{comp}/hist/{htype}"
     _checkdir(outfolder)
 
