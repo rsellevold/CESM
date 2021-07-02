@@ -63,7 +63,7 @@ def mergehist(config, comp, var, hfile, htype):
     prevDataExists = False
     if os.path.exists(f"{outfolder}/{var}.nc"):
         f_already = xr.open_dataset(f"{outfolder}/{var}.nc")
-        fnames_all = _removeSameTime(fnames_all, comp, bndname, f.time.values)
+        fnames_all = _removeSameTime(fnames_all, comp, bndname, f_already.time.values)
         prevDataExists = True
 
     nfiles = math.floor(len(fnames_all)/100)

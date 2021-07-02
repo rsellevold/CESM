@@ -1,6 +1,7 @@
 import os,sys
 import numpy as np
 import xarray as xr
+from eofs.standard import Eof
 
 from .misc import *
 from .ncl import *
