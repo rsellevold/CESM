@@ -12,7 +12,7 @@ import lib
 def masks(fdir, var):
     if var=="GrIS":
         #try:
-        ds = xr.open_mfdataset([f"{fdir[:-12]}/input.nc", f"{fdir}/ICE_MODEL_FRACTION.nc", f"{fdir}/PCT_LANDUNIT.nc"], combine="nested")
+        ds = xr.open_mfdataset([f"input.nc", f"{fdir}/ICE_MODEL_FRACTION.nc", f"{fdir}/PCT_LANDUNIT.nc"], combine="nested")
         GrIS = ds.ICE_MODEL_FRACTION.values * ds.PCT_LANDUNIT.values[:,3,:,:]/100.0 * ds.area.values * ds.landfrac.values
         GrIS = xr.DataArray(GrIS, name="GrIS", dims=("time","lat","lon"), coords=[ds.time, ds.lat, ds.lon])
         GrIS = GrIS.fillna(0.)
@@ -30,7 +30,7 @@ def masks(fdir, var):
 
     if var=="GrIS_pct":
         try:
-            ds = xr.open_mfdataset([f"{fdir[:-12]}/input.nc", f"{fdir}/ICE_MODEL_FRACTION.nc", f"{fdir}/PCT_LANDUNIT.nc"], combine="nested")
+            ds = xr.open_mfdataset([f"input.nc", f"{fdir}/ICE_MODEL_FRACTION.nc", f"{fdir}/PCT_LANDUNIT.nc"], combine="nested")
             GrIS = ds.ICE_MODEL_FRACTION.values * ds.PCT_LANDUNIT.values[:,3,:,:]/100.0 * ds.landfrac.values
             GrIS = xr.DataArray(GrIS, name="GrIS_pct", dims=("time","lat","lon"), coords=[ds.time, ds.lat, ds.lon])
             GrIS = GrIS.fillna(0.)
