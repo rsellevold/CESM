@@ -150,7 +150,7 @@ def mergehist(config, comp, var, hfile, htype):
             data = data.sortby("time")
 
         data.encoding["unlimited_dims"] = "time"
-        data.to_netcdf(f"{outfolder}/{var}.nc", encoding={"time": {"dtype":"float"}})
+        data.to_netcdf(f"{outfolder}/{var}_temp.nc", encoding={"time": {"dtype":"float"}})
 
         data.close()
         f.close()
@@ -160,6 +160,7 @@ def mergehist(config, comp, var, hfile, htype):
             del(f_already)
 
         os.system(f"rm {outfolder[:-12]}/temp/{var}.nc")
+        os.system(f"mv {outfolder}/{var}_temp.nc {outfolder}/{var}.nc")
     elif len(fnames_all)==0 and prevDataExists:
         f_already.close()
         del(f_already)
