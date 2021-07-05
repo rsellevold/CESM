@@ -2,6 +2,7 @@ import sys, os, glob, math
 import cftime
 import numpy as np
 import xarray as xr
+import Ngl
 
 from .sysfunc import _checkdir
 from .ncl import vinth2p
@@ -64,7 +65,7 @@ def mergehist(config, comp, var, hfile, htype):
     prevDataExists = False
     if os.path.exists(f"{outfolder}/{var}.nc"):
         f_already = xr.open_dataset(f"{outfolder}/{var}.nc")
-        fnames_all = _removeSameTime(fnames_all, comp, bndname, f.time.values)
+        fnames_all = _removeSameTime(fnames_all, comp, bndname, f_already.time.values)
         prevDataExists = True
 
     nfiles = math.floor(len(fnames_all)/100)
@@ -137,7 +138,9 @@ def mergehist(config, comp, var, hfile, htype):
                 tmax = data.time.max()
                 PS = fPS.PS.sel(time=slice(tmin,tmax))
             for t in range(nt):
-                data_new[t,:,:,:] = vinth2p(data.values[t,:,:,:], f.hyam.values, f.hybm.values, 1000., plev, PS.values[t,:,:], 1e+36)
+                #data_new[t,:,:,:] = vinth2p(data.values[t,:,:,:], f.hyam.values, f.hybm.values, 1000., plev, PS.values[t,:,:], 1e+36)
+                data_new[t,:,:,:] = Ngl.vinth2p(data.values[t,:,:,:], f.hyam.values, f.hybm.values, plev, PS.values[t,:,:], 1, 1000., 1, False)
+            data_new[data_new==1e+30] = np.nan
             data = xr.DataArray(data_new, name=var, dims=("time","lev","lat","lon"), coords=[data.time, plev, data.lat, data.lon])
 
         data = data.to_dataset()
